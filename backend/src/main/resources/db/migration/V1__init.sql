@@ -22,7 +22,7 @@ CREATE TABLE member_grape_ratings (
 CREATE TABLE memberships (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
     member_id  BIGINT NOT NULL,
-    plan       ENUM('BROTE', 'BROTE_PLUS', 'EMVERO', 'EMVERO_PLUS') NOT NULL,
+    plan       ENUM('BROTE', 'BROTE_PLUS', 'ENVERO', 'ENVERO_PLUS') NOT NULL,
     status     ENUM('ACTIVE', 'PAUSED', 'CANCELLED') NOT NULL DEFAULT 'ACTIVE',
     start_date DATE NOT NULL,
     end_date   DATE,
@@ -37,10 +37,10 @@ CREATE TABLE wines (
     stock_gondola         INT NOT NULL DEFAULT 0,
     stock_cuartito        INT NOT NULL DEFAULT 0,
     reference_price       DECIMAL(10, 2),
-    -- categoria calculada: < 22500 = BROTE, >= 22500 = EMVERO
-    category              ENUM('BROTE', 'EMVERO') AS (
+    -- categoria calculada: < 22500 = BROTE, >= 22500 = ENVERO
+    category              ENUM('BROTE', 'ENVERO') AS (
                               IF(reference_price IS NULL, NULL,
-                                 IF(reference_price < 22500, 'BROTE', 'EMVERO'))
+                                 IF(reference_price < 22500, 'BROTE', 'ENVERO'))
                           ) STORED,
     is_club_eligible      BOOLEAN NOT NULL DEFAULT FALSE,
     tiendanube_product_id VARCHAR(50),
