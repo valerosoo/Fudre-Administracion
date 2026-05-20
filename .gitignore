@@ -8,6 +8,7 @@ frontend/.env*.local
 backend/.gradle
 backend/build
 backend/.env
+backend/src/main/resources/application.properties
 
 # IDE
 .idea

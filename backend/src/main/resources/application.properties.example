@@ -1,0 +1,17 @@
+spring.application.name=app
+
+# ── Base de datos ──────────────────────────────────────────────
+spring.datasource.url=jdbc:mysql://localhost:3306/NOMBRE_BASE_DE_DATOS
+spring.datasource.username=USUARIO
+spring.datasource.password=CONTRASEÑA
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# ── JPA / Hibernate ────────────────────────────────────────────
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+
+# ── Flyway (migraciones SQL) ───────────────────────────────────
+spring.flyway.enabled=true
+spring.flyway.locations=classpath:db/migration
