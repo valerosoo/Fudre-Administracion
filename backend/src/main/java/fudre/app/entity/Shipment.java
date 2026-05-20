@@ -45,4 +45,5 @@ public class Shipment {
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
     public List<ShipmentItem> getItems() { return items; }
+    public void setItems(List<ShipmentItem> items) { this.items = items; }
 }

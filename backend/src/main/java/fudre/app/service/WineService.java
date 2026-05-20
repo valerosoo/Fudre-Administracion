@@ -15,10 +15,12 @@ public class WineService {
 
     private final WineRepository wineRepository;
     private final EntityManager entityManager;
+    private final StockSyncService stockSyncService;
 
-    public WineService(WineRepository wineRepository, EntityManager entityManager) {
+    public WineService(WineRepository wineRepository, EntityManager entityManager, StockSyncService stockSyncService) {
         this.wineRepository = wineRepository;
         this.entityManager = entityManager;
+        this.stockSyncService = stockSyncService;
     }
 
     public List<WineDto> getAll() {
@@ -56,6 +58,7 @@ public class WineService {
         wineRepository.save(wine);
         entityManager.flush();
         entityManager.refresh(wine);
+        stockSyncService.syncStockToTiendanube(wine);
         return toDto(wine);
     }
 
