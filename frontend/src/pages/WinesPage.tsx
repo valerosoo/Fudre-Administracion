@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import { Pencil, Trash2, Plus } from 'lucide-react'
-
+import { Pencil, Trash2, Plus, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -35,6 +34,57 @@ const defaultValues: Wine = {
   uploadStatus: 'PENDING',
 }
 
+const SELECT_CLS = 'h-10 rounded-md border border-input bg-background px-3 text-sm'
+
+function GrapeMultiSelect({ grapes, selected, onChange }: {
+  grapes: string[]
+  selected: string[]
+  onChange: (v: string[]) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  function toggle(grape: string) {
+    onChange(selected.includes(grape) ? selected.filter(g => g !== grape) : [...selected, grape])
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className={`h-10 rounded-md border px-3 text-sm flex items-center gap-1 min-w-36 cursor-pointer transition-colors ${selected.length > 0 ? 'border-primary text-primary' : 'border-input bg-background'}`}
+      >
+        {selected.length === 0 ? 'Todas las uvas' : `${selected.length} uva${selected.length > 1 ? 's' : ''}`}
+        <ChevronDown size={14} className="ml-auto" />
+      </button>
+      {open && (
+        <div className="absolute top-11 left-0 z-20 bg-white border border-input rounded-md shadow-lg p-1 max-h-60 overflow-y-auto min-w-48">
+          {grapes.map(g => (
+            <label key={g} className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-accent cursor-pointer text-sm">
+              <input
+                type="checkbox"
+                checked={selected.includes(g)}
+                onChange={() => toggle(g)}
+                className="accent-primary"
+              />
+              {g}
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function WinesPage() {
   const [wines, setWines] = useState<Wine[]>([])
   const [loading, setLoading] = useState(true)
@@ -42,11 +92,17 @@ export function WinesPage() {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [deleteId, setDeleteId] = useState<number | null>(null)
 
+  // ── Filters ──────────────────────────────────────────────
+  const [search, setSearch] = useState('')
+  const [sortName, setSortName] = useState<'asc' | 'desc' | ''>('')
+  const [grapeFilter, setGrapeFilter] = useState<string[]>([])
+  const [stockFilter, setStockFilter] = useState<'all' | 'with' | 'without'>('all')
+  const [categoryFilter, setCategoryFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+
   const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<Wine>({ defaultValues })
 
-  useEffect(() => {
-    load()
-  }, [])
+  useEffect(() => { load() }, [])
 
   async function load() {
     try {
@@ -106,13 +162,84 @@ export function WinesPage() {
     }
   }
 
+  // ── Derived data ──────────────────────────────────────────
+  const uniqueGrapes = [...new Set(wines.map(w => w.grape).filter(Boolean))].sort()
+
+  const filtered = wines
+    .filter(w => !search || w.name.toLowerCase().includes(search.toLowerCase()))
+    .filter(w => grapeFilter.length === 0 || grapeFilter.includes(w.grape))
+    .filter(w => {
+      const total = w.stockTotal ?? w.stockGondola + w.stockCuartito
+      if (stockFilter === 'with') return total > 0
+      if (stockFilter === 'without') return total === 0
+      return true
+    })
+    .filter(w => !categoryFilter || w.category === categoryFilter)
+    .filter(w => !statusFilter || w.uploadStatus === statusFilter)
+    .sort((a, b) => {
+      if (!sortName) return 0
+      return sortName === 'asc'
+        ? a.name.localeCompare(b.name, 'es')
+        : b.name.localeCompare(a.name, 'es')
+    })
+
+  function cycleSortName() {
+    setSortName(s => s === '' ? 'asc' : s === 'asc' ? 'desc' : '')
+  }
+
+  const SortIcon = sortName === 'asc' ? ChevronUp : sortName === 'desc' ? ChevronDown : ChevronsUpDown
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-semibold">Vinos</h1>
         <Button onClick={openCreate}>
           <Plus size={16} /> Nuevo vino
         </Button>
+      </div>
+
+      {/* Filter bar */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        <Input
+          placeholder="Buscar por nombre..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-52"
+        />
+        <button
+          type="button"
+          onClick={cycleSortName}
+          className={`${SELECT_CLS} flex items-center gap-1 cursor-pointer ${sortName ? 'border-primary text-primary' : ''}`}
+        >
+          <SortIcon size={14} />
+          {sortName === 'asc' ? 'Nombre A-Z' : sortName === 'desc' ? 'Nombre Z-A' : 'Ordenar nombre'}
+        </button>
+        <GrapeMultiSelect grapes={uniqueGrapes} selected={grapeFilter} onChange={setGrapeFilter} />
+        <select value={stockFilter} onChange={e => setStockFilter(e.target.value as typeof stockFilter)} className={SELECT_CLS}>
+          <option value="all">Todo el stock</option>
+          <option value="with">Con stock</option>
+          <option value="without">Sin stock</option>
+        </select>
+        <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={SELECT_CLS}>
+          <option value="">Todas las categorías</option>
+          <option value="BROTE">Brote</option>
+          <option value="ENVERO">Envero</option>
+        </select>
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className={SELECT_CLS}>
+          <option value="">Todos los estados</option>
+          <option value="PENDING">Pendiente</option>
+          <option value="UPLOADED">Subido</option>
+          <option value="OUT_OF_STOCK">Sin stock</option>
+        </select>
+        {(search || sortName || grapeFilter.length > 0 || stockFilter !== 'all' || categoryFilter || statusFilter) && (
+          <button
+            type="button"
+            onClick={() => { setSearch(''); setSortName(''); setGrapeFilter([]); setStockFilter('all'); setCategoryFilter(''); setStatusFilter('') }}
+            className="h-10 px-3 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          >
+            Limpiar filtros
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -136,13 +263,13 @@ export function WinesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {wines.length === 0 ? (
+              {filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
-                    No hay vinos registrados
+                    No hay vinos que coincidan con los filtros
                   </TableCell>
                 </TableRow>
-              ) : wines.map(wine => (
+              ) : filtered.map(wine => (
                 <TableRow key={wine.id}>
                   <TableCell className="font-medium">{wine.name}</TableCell>
                   <TableCell>{wine.grape}</TableCell>

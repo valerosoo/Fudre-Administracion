@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { toast } from 'sonner'
-import { Trash2, Plus, X } from 'lucide-react'
+import { Trash2, Plus, X, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,6 +37,9 @@ export function ShipmentsPage() {
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<number | null>(null)
+
+  const [search, setSearch] = useState('')
+  const [dateSort, setDateSort] = useState<'asc' | 'desc' | ''>('')
 
   const { register, handleSubmit, reset, control, formState: { isSubmitting } } = useForm<Shipment>({ defaultValues })
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
@@ -103,16 +106,52 @@ export function ShipmentsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-semibold">Envíos</h1>
         <Button onClick={openCreate} disabled={members.length === 0 || memberships.length === 0}>
           <Plus size={16} /> Nuevo envío
         </Button>
       </div>
 
+      {/* Filter bar */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        <Input
+          placeholder="Buscar por miembro..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-52"
+        />
+        <button
+          type="button"
+          onClick={() => setDateSort(s => s === '' ? 'desc' : s === 'desc' ? 'asc' : '')}
+          className={`h-10 rounded-md border border-input bg-background px-3 text-sm flex items-center gap-1 cursor-pointer transition-colors ${dateSort ? 'border-primary text-primary' : ''}`}
+        >
+          {dateSort === 'desc' ? <ChevronDown size={14} /> : dateSort === 'asc' ? <ChevronUp size={14} /> : <ChevronsUpDown size={14} />}
+          {dateSort === 'desc' ? 'Fecha más reciente' : dateSort === 'asc' ? 'Fecha más antigua' : 'Ordenar fecha'}
+        </button>
+        {(search || dateSort) && (
+          <button
+            type="button"
+            onClick={() => { setSearch(''); setDateSort('') }}
+            className="h-10 px-3 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          >
+            Limpiar filtros
+          </button>
+        )}
+      </div>
+
       {loading ? (
         <p className="text-muted-foreground">Cargando...</p>
-      ) : (
+      ) : (() => {
+        const filtered = shipments
+          .filter(s => !search || (s.memberName ?? '').toLowerCase().includes(search.toLowerCase()))
+          .sort((a, b) => {
+            if (!dateSort) return 0
+            const da = a.shippedAt ?? ''
+            const db = b.shippedAt ?? ''
+            return dateSort === 'asc' ? da.localeCompare(db) : db.localeCompare(da)
+          })
+        return (
         <div className="rounded-lg border bg-card">
           <Table>
             <TableHeader>
@@ -127,13 +166,13 @@ export function ShipmentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {shipments.length === 0 ? (
+              {filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                     No hay envíos registrados
                   </TableCell>
                 </TableRow>
-              ) : shipments.map(s => (
+              ) : filtered.map(s => (
                 <TableRow key={s.id}>
                   <TableCell className="font-medium">{s.memberName ?? `#${s.memberId}`}</TableCell>
                   <TableCell>{s.memberEmail ?? '—'}</TableCell>
@@ -151,7 +190,8 @@ export function ShipmentsPage() {
             </TableBody>
           </Table>
         </div>
-      )}
+        )
+      })()}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">

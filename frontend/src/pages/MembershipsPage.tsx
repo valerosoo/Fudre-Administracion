@@ -39,6 +39,8 @@ export function MembershipsPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [search, setSearch] = useState('')
+  const [planFilter, setPlanFilter] = useState('')
 
   const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<Membership>({ defaultValues })
 
@@ -99,11 +101,39 @@ export function MembershipsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-semibold">Membresías</h1>
         <Button onClick={openCreate} disabled={members.length === 0}>
           <Plus size={16} /> Nueva membresía
         </Button>
+      </div>
+
+      <div className="flex gap-2 mb-4">
+        <Input
+          placeholder="Buscar por nombre de miembro..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-64"
+        />
+        <select
+          value={planFilter}
+          onChange={e => setPlanFilter(e.target.value)}
+          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+        >
+          <option value="">Todos los planes</option>
+          {Object.entries(PLAN_LABELS).map(([v, l]) => (
+            <option key={v} value={v}>{l}</option>
+          ))}
+        </select>
+        {(search || planFilter) && (
+          <button
+            type="button"
+            onClick={() => { setSearch(''); setPlanFilter('') }}
+            className="h-10 px-3 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          >
+            Limpiar
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -121,13 +151,16 @@ export function MembershipsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {memberships.length === 0 ? (
+              {memberships.filter(m => !search || (m.memberName ?? '').toLowerCase().includes(search.toLowerCase())).filter(m => !planFilter || m.plan === planFilter).length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                     No hay membresías registradas
                   </TableCell>
                 </TableRow>
-              ) : memberships.map(m => (
+              ) : memberships
+                  .filter(m => !search || (m.memberName ?? '').toLowerCase().includes(search.toLowerCase()))
+                  .filter(m => !planFilter || m.plan === planFilter)
+                  .map(m => (
                 <TableRow key={m.id}>
                   <TableCell className="font-medium">{m.memberName ?? `#${m.memberId}`}</TableCell>
                   <TableCell>

@@ -17,6 +17,8 @@ import {
 import { membersService } from '@/services/members'
 import type { Member } from '@/types'
 
+const SELECT_CLS = 'h-10 rounded-md border border-input bg-background px-3 text-sm'
+
 const defaultValues: Member = {
   name: '',
   email: '',
@@ -32,6 +34,8 @@ export function MembersPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [deleteId, setDeleteId] = useState<number | null>(null)
+
+  const [search, setSearch] = useState('')
 
   const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<Member>({ defaultValues })
 
@@ -87,13 +91,34 @@ export function MembersPage() {
     }
   }
 
+  const filtered = members
+    .filter(m => !search || m.name.toLowerCase().includes(search.toLowerCase()))
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-semibold">Miembros</h1>
         <Button onClick={openCreate}>
           <Plus size={16} /> Nuevo miembro
         </Button>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-4">
+        <Input
+          placeholder="Buscar por nombre..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-52"
+        />
+        {search && (
+          <button
+            type="button"
+            onClick={() => setSearch('')}
+            className="h-10 px-3 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          >
+            Limpiar
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -112,31 +137,31 @@ export function MembersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {members.length === 0 ? (
+              {filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                    No hay miembros registrados
+                    No hay miembros que coincidan con los filtros
                   </TableCell>
                 </TableRow>
-              ) : members.map(m => (
-                <TableRow key={m.id}>
-                  <TableCell className="font-medium">{m.name}</TableCell>
-                  <TableCell>{m.email}</TableCell>
-                  <TableCell>{m.phone ?? '—'}</TableCell>
-                  <TableCell>{m.address ?? '—'}</TableCell>
-                  <TableCell className="max-w-xs truncate">{m.tasteProfile ?? '—'}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <Button size="icon" variant="ghost" onClick={() => openEdit(m)}>
-                        <Pencil size={14} />
-                      </Button>
-                      <Button size="icon" variant="ghost" onClick={() => setDeleteId(m.id!)}>
-                        <Trash2 size={14} className="text-destructive" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+              ) : filtered.map(m => (
+                  <TableRow key={m.id}>
+                    <TableCell className="font-medium">{m.name}</TableCell>
+                    <TableCell>{m.email}</TableCell>
+                    <TableCell>{m.phone ?? '—'}</TableCell>
+                    <TableCell>{m.address ?? '—'}</TableCell>
+                    <TableCell className="max-w-xs truncate">{m.tasteProfile ?? '—'}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button size="icon" variant="ghost" onClick={() => openEdit(m)}>
+                          <Pencil size={14} />
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={() => setDeleteId(m.id!)}>
+                          <Trash2 size={14} className="text-destructive" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </div>
