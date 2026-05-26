@@ -1,0 +1,20 @@
+# Frontend
+frontend/node_modules
+frontend/dist
+frontend/.vite
+frontend/.env*.local
+
+# Backend
+backend/.gradle
+backend/build
+backend/.env
+backend/src/main/resources/application.properties
+
+# IDE
+.idea
+.vscode
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db

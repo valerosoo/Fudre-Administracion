@@ -1,0 +1,10 @@
+ALTER TABLE memberships
+    MODIFY COLUMN plan ENUM('BROTE', 'BROTE_PLUS', 'ENVERO', 'ENVERO_PLUS') NOT NULL;
+
+ALTER TABLE wine_pool
+    MODIFY COLUMN plan ENUM('BROTE', 'BROTE_PLUS', 'ENVERO', 'ENVERO_PLUS') NOT NULL;
+
+ALTER TABLE wines DROP COLUMN category;
+ALTER TABLE wines ADD COLUMN category ENUM('BROTE', 'ENVERO') GENERATED ALWAYS AS (
+    IF(reference_price IS NULL, NULL, IF(reference_price < 22500, 'BROTE', 'ENVERO'))
+) STORED AFTER reference_price;
