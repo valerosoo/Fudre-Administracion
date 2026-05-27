@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { Trash2, Plus, X, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { ImportButton } from '@/components/ImportButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -108,9 +109,12 @@ export function ShipmentsPage() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-semibold">Envíos</h1>
-        <Button onClick={openCreate} disabled={members.length === 0 || memberships.length === 0}>
-          <Plus size={16} /> Nuevo envío
-        </Button>
+        <div className="flex gap-2">
+          <ImportButton entity="shipments" onSuccess={load} />
+          <Button onClick={openCreate} disabled={members.length === 0 || memberships.length === 0}>
+            <Plus size={16} /> Nuevo envío
+          </Button>
+        </div>
       </div>
 
       {/* Filter bar */}
