@@ -16,7 +16,9 @@ public class WineDto {
     private WineCategory category;
     private Boolean isClubEligible;
     private String tiendanubeProductId;
+    private String tiendanubeVariantId;
     private String uploadStatus;
+    private String imageUrl;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -40,6 +42,10 @@ public class WineDto {
     public void setIsClubEligible(Boolean isClubEligible) { this.isClubEligible = isClubEligible; }
     public String getTiendanubeProductId() { return tiendanubeProductId; }
     public void setTiendanubeProductId(String tiendanubeProductId) { this.tiendanubeProductId = tiendanubeProductId; }
+    public String getTiendanubeVariantId() { return tiendanubeVariantId; }
+    public void setTiendanubeVariantId(String tiendanubeVariantId) { this.tiendanubeVariantId = tiendanubeVariantId; }
     public String getUploadStatus() { return uploadStatus; }
     public void setUploadStatus(String uploadStatus) { this.uploadStatus = uploadStatus; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 }

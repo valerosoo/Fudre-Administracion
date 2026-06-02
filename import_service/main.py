@@ -181,5 +181,4 @@ def _get_all(entity: str) -> list:
 
 if __name__ == "__main__":
     print("Servicio de importación corriendo en http://localhost:8081")
-    print(f"Proveedor AI: {__import__('config').AI_PROVIDER}")
     app.run(port=8081, debug=True)

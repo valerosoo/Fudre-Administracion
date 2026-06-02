@@ -34,6 +34,13 @@ public class MemberService {
         return toDto(memberRepository.save(toEntity(dto)));
     }
 
+    // Usado por webhooks: crea si no existe, devuelve el existente si ya está
+    public MemberDto createOrSkip(MemberDto dto) {
+        return memberRepository.findByEmail(dto.getEmail())
+                .map(this::toDto)
+                .orElseGet(() -> toDto(memberRepository.save(toEntity(dto))));
+    }
+
     public MemberDto update(Long id, MemberDto dto) {
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Miembro no encontrado: " + id));

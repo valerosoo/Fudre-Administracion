@@ -4,4 +4,4 @@ pdfplumber
 pandas
 openpyxl
 requests
-# anthropic  ← descomentar cuando tengas la API key de Claude
+anthropic

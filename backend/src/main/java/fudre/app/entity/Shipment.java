@@ -30,6 +30,9 @@ public class Shipment {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    @Column(name = "tiendanube_order_id", unique = true)
+    private String tiendanubeOrderId;
+
     @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL)
     private List<ShipmentItem> items;
 
@@ -44,6 +47,8 @@ public class Shipment {
     public void setShippingCost(BigDecimal shippingCost) { this.shippingCost = shippingCost; }
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+    public String getTiendanubeOrderId() { return tiendanubeOrderId; }
+    public void setTiendanubeOrderId(String tiendanubeOrderId) { this.tiendanubeOrderId = tiendanubeOrderId; }
     public List<ShipmentItem> getItems() { return items; }
     public void setItems(List<ShipmentItem> items) { this.items = items; }
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import { Pencil, Trash2, Plus, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
+import { Pencil, Trash2, Plus, ChevronUp, ChevronDown, ChevronsUpDown, ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ImportButton } from '@/components/ImportButton'
 import { Input } from '@/components/ui/input'
@@ -91,7 +91,10 @@ export function WinesPage() {
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingWine, setEditingWine] = useState<Wine | null>(null)
   const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   // ── Filters ──────────────────────────────────────────────
   const [search, setSearch] = useState('')
@@ -118,13 +121,29 @@ export function WinesPage() {
   function openCreate() {
     reset(defaultValues)
     setEditingId(null)
+    setEditingWine(null)
+    setSelectedFile(null)
+    setImagePreview(null)
     setDialogOpen(true)
   }
 
   function openEdit(wine: Wine) {
     reset(wine)
     setEditingId(wine.id!)
+    setEditingWine(wine)
+    setSelectedFile(null)
+    setImagePreview(null)
     setDialogOpen(true)
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null
+    setSelectedFile(file)
+    if (file) {
+      setImagePreview(URL.createObjectURL(file))
+    } else {
+      setImagePreview(null)
+    }
   }
 
   async function onSubmit(data: Wine) {
@@ -137,13 +156,23 @@ export function WinesPage() {
         vintageYear: data.vintageYear ? Number(data.vintageYear) : undefined,
         isClubEligible: Boolean(data.isClubEligible),
       }
+      let saved: Wine
       if (editingId) {
-        await winesService.update(editingId, payload)
+        saved = await winesService.update(editingId, payload)
         toast.success('Vino actualizado')
       } else {
-        await winesService.create(payload)
+        saved = await winesService.create(payload)
         toast.success('Vino creado')
       }
+
+      if (selectedFile && saved.id) {
+        try {
+          await winesService.uploadImage(saved.id, selectedFile)
+        } catch {
+          toast.error('Vino guardado pero no se pudo subir la foto')
+        }
+      }
+
       setDialogOpen(false)
       load()
     } catch (e: unknown) {
@@ -189,6 +218,8 @@ export function WinesPage() {
   }
 
   const SortIcon = sortName === 'asc' ? ChevronUp : sortName === 'desc' ? ChevronDown : ChevronsUpDown
+
+  const currentImage = imagePreview ?? editingWine?.imageUrl ?? null
 
   return (
     <div>
@@ -253,6 +284,7 @@ export function WinesPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12"></TableHead>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Uva</TableHead>
                 <TableHead>Año</TableHead>
@@ -269,12 +301,21 @@ export function WinesPage() {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={12} className="text-center text-muted-foreground py-8">
                     No hay vinos que coincidan con los filtros
                   </TableCell>
                 </TableRow>
               ) : filtered.map(wine => (
                 <TableRow key={wine.id}>
+                  <TableCell>
+                    {wine.imageUrl ? (
+                      <img src={wine.imageUrl} alt={wine.name} className="h-8 w-8 object-cover rounded" />
+                    ) : (
+                      <div className="h-8 w-8 rounded bg-muted flex items-center justify-center">
+                        <ImageIcon size={14} className="text-muted-foreground" />
+                      </div>
+                    )}
+                  </TableCell>
                   <TableCell className="font-medium">{wine.name}</TableCell>
                   <TableCell>{wine.grape}</TableCell>
                   <TableCell>{wine.vintageYear ?? '—'}</TableCell>
@@ -347,24 +388,16 @@ export function WinesPage() {
               <Label>Precio referencia ($)</Label>
               <Input type="number" {...register('referencePrice')} />
             </div>
-            <div className="space-y-1">
-              <Label>ID Tiendanube</Label>
-              <Input {...register('tiendanubeProductId')} placeholder="Opcional" />
-            </div>
-            <div className="space-y-1">
-              <Label>Estado Tiendanube</Label>
-              <select
-                {...register('uploadStatus')}
-                className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
-              >
-                <option value="PENDING">Pendiente</option>
-                <option value="UPLOADED">Subido</option>
-                <option value="OUT_OF_STOCK">Sin stock</option>
-              </select>
-            </div>
             <div className="col-span-2 flex items-center gap-2">
               <input type="checkbox" id="clubEligible" {...register('isClubEligible')} />
               <Label htmlFor="clubEligible">Apto para el club</Label>
+            </div>
+            <div className="col-span-2 space-y-2">
+              <Label>Foto del vino</Label>
+              {currentImage && (
+                <img src={currentImage} alt="Vista previa" className="h-24 w-24 object-cover rounded-md border" />
+              )}
+              <Input type="file" accept="image/*" onChange={handleFileChange} />
             </div>
             <DialogFooter className="col-span-2">
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>

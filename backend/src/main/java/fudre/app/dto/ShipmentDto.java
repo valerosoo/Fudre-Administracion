@@ -14,6 +14,7 @@ public class ShipmentDto {
     private LocalDate shippedAt;
     private BigDecimal shippingCost;
     private String notes;
+    private String tiendanubeOrderId;
     private List<ShipmentItemDto> items;
 
     public Long getId() { return id; }
@@ -32,6 +33,8 @@ public class ShipmentDto {
     public void setShippingCost(BigDecimal shippingCost) { this.shippingCost = shippingCost; }
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+    public String getTiendanubeOrderId() { return tiendanubeOrderId; }
+    public void setTiendanubeOrderId(String id) { this.tiendanubeOrderId = id; }
     public List<ShipmentItemDto> getItems() { return items; }
     public void setItems(List<ShipmentItemDto> items) { this.items = items; }
 }

@@ -115,6 +115,7 @@ public class ShipmentService {
         dto.setShippedAt(s.getShippedAt());
         dto.setShippingCost(s.getShippingCost());
         dto.setNotes(s.getNotes());
+        dto.setTiendanubeOrderId(s.getTiendanubeOrderId());
         if (s.getItems() != null) {
             dto.setItems(s.getItems().stream().map(this::toItemDto).toList());
         }

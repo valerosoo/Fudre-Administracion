@@ -39,6 +39,12 @@ public class Wine {
     @Column(name = "tiendanube_product_id")
     private String tiendanubeProductId;
 
+    @Column(name = "tiendanube_variant_id")
+    private String tiendanubeVariantId;
+
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @Column(name = "upload_status")
     private String uploadStatus;
 
@@ -63,7 +69,11 @@ public class Wine {
     public void setIsClubEligible(Boolean isClubEligible) { this.isClubEligible = isClubEligible; }
     public String getTiendanubeProductId() { return tiendanubeProductId; }
     public void setTiendanubeProductId(String tiendanubeProductId) { this.tiendanubeProductId = tiendanubeProductId; }
+    public String getTiendanubeVariantId() { return tiendanubeVariantId; }
+    public void setTiendanubeVariantId(String tiendanubeVariantId) { this.tiendanubeVariantId = tiendanubeVariantId; }
     public String getUploadStatus() { return uploadStatus; }
     public void setUploadStatus(String uploadStatus) { this.uploadStatus = uploadStatus; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 }

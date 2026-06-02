@@ -15,6 +15,7 @@ export interface Wine {
   isClubEligible: boolean
   tiendanubeProductId?: string
   uploadStatus?: UploadStatus
+  imageUrl?: string
 }
 
 export interface Member {
