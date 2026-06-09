@@ -124,6 +124,8 @@ public class StockSyncService {
         shipment.setShippingCost(shippingCost);
         shipment.setTiendanubeOrderId(orderId);
         shipment.setNotes("Importado desde Tiendanube orden #" + orderId);
+        shipment.setType(ShipmentType.STANDALONE);
+        shipment.setStatus(ShipmentStatus.CONFIRMED);
 
         Shipment saved = shipmentRepository.save(shipment);
         items.forEach(item -> item.setShipment(saved));

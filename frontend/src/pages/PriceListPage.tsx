@@ -8,12 +8,21 @@ import { GrapeMultiSelect } from '@/components/GrapeMultiSelect'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog'
 
 import { priceListService } from '@/services/priceList'
 import { purchaseListService } from '@/services/purchaseList'
 import type { PriceListItem } from '@/types'
 
 const SELECT_CLS = 'h-10 rounded-md border border-input bg-background px-3 text-sm'
+
+const PURPOSES = [
+  { value: 'TIENDA', label: 'Para la tienda', desc: 'Se pondrá a la venta en la tienda' },
+  { value: 'EVENTO', label: 'Para un evento', desc: 'Reservado para un evento próximo' },
+  { value: 'ALMACENAMIENTO', label: 'Para almacenamiento', desc: 'Se guarda en stock sin destino fijo' },
+]
 
 export function PriceListPage() {
   const [items, setItems] = useState<PriceListItem[]>([])
@@ -24,6 +33,10 @@ export function PriceListPage() {
   const [distributorFilter, setDistributorFilter] = useState('')
   const [grapeFilter, setGrapeFilter] = useState<string[]>([])
   const [sortPrice, setSortPrice] = useState<'asc' | 'desc' | ''>('')
+
+  const [purposeDialogOpen, setPurposeDialogOpen] = useState(false)
+  const [pendingCartItem, setPendingCartItem] = useState<PriceListItem | null>(null)
+  const [selectedPurpose, setSelectedPurpose] = useState('TIENDA')
 
   useEffect(() => { load() }, [])
 
@@ -38,10 +51,20 @@ export function PriceListPage() {
   }
 
   async function handleAddToCart(item: PriceListItem) {
-    const qty = quantities[item.id!] ?? 1
+    setPendingCartItem(item)
+    setSelectedPurpose('TIENDA')
+    setPurposeDialogOpen(true)
+  }
+
+  async function confirmAddToCart() {
+    if (!pendingCartItem) return
+    const qty = quantities[pendingCartItem.id!] ?? 1
+    const purposeLabel = PURPOSES.find(p => p.value === selectedPurpose)?.label ?? ''
     try {
-      await purchaseListService.addItem(item.id!, qty)
-      toast.success(`${item.name} agregado al carrito`)
+      await purchaseListService.addItem(pendingCartItem.id!, qty)
+      toast.success(`${pendingCartItem.name} agregado — ${purposeLabel}`)
+      setPurposeDialogOpen(false)
+      setPendingCartItem(null)
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al agregar')
     }
@@ -175,6 +198,43 @@ export function PriceListPage() {
           </Table>
         </div>
       )}
+
+      <Dialog open={purposeDialogOpen} onOpenChange={setPurposeDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>¿Para qué es este vino?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground -mt-1">
+            {pendingCartItem?.name} · {quantities[pendingCartItem?.id ?? 0] ?? 1} u.
+          </p>
+          <div className="space-y-2 py-1">
+            {PURPOSES.map(opt => (
+              <label
+                key={opt.value}
+                className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-colors
+                  ${selectedPurpose === opt.value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}`}
+              >
+                <input
+                  type="radio"
+                  name="purpose"
+                  value={opt.value}
+                  checked={selectedPurpose === opt.value}
+                  onChange={() => setSelectedPurpose(opt.value)}
+                  className="mt-0.5 accent-primary"
+                />
+                <div>
+                  <p className="text-sm font-medium">{opt.label}</p>
+                  <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPurposeDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={confirmAddToCart}>Confirmar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -2,6 +2,7 @@ package fudre.app.dto;
 
 import fudre.app.entity.WineStyle;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class MemberDto {
 
@@ -15,6 +16,7 @@ public class MemberDto {
     private Boolean openToNew;
     private String occasions;
     private LocalDateTime createdAt;
+    private List<MemberGrapeRatingDto> grapeRatings;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -36,4 +38,6 @@ public class MemberDto {
     public void setOccasions(String occasions) { this.occasions = occasions; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public List<MemberGrapeRatingDto> getGrapeRatings() { return grapeRatings; }
+    public void setGrapeRatings(List<MemberGrapeRatingDto> grapeRatings) { this.grapeRatings = grapeRatings; }
 }

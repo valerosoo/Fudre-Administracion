@@ -1,5 +1,7 @@
 package fudre.app.dto;
 
+import fudre.app.entity.ShipmentStatus;
+import fudre.app.entity.ShipmentType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -15,6 +17,8 @@ public class ShipmentDto {
     private BigDecimal shippingCost;
     private String notes;
     private String tiendanubeOrderId;
+    private ShipmentType type;
+    private ShipmentStatus status;
     private List<ShipmentItemDto> items;
 
     public Long getId() { return id; }
@@ -35,6 +39,10 @@ public class ShipmentDto {
     public void setNotes(String notes) { this.notes = notes; }
     public String getTiendanubeOrderId() { return tiendanubeOrderId; }
     public void setTiendanubeOrderId(String id) { this.tiendanubeOrderId = id; }
+    public ShipmentType getType() { return type; }
+    public void setType(ShipmentType type) { this.type = type; }
+    public ShipmentStatus getStatus() { return status; }
+    public void setStatus(ShipmentStatus status) { this.status = status; }
     public List<ShipmentItemDto> getItems() { return items; }
     public void setItems(List<ShipmentItemDto> items) { this.items = items; }
 }

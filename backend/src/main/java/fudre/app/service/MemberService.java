@@ -1,10 +1,19 @@
 package fudre.app.service;
 
 import fudre.app.dto.MemberDto;
+import fudre.app.dto.MemberGrapeRatingDto;
+import fudre.app.dto.WineRatingDto;
 import fudre.app.entity.Member;
+import fudre.app.entity.MemberGrapeRating;
+import fudre.app.entity.Wine;
+import fudre.app.entity.WineRating;
 import fudre.app.repository.MemberRepository;
+import fudre.app.repository.WineRepository;
+import fudre.app.repository.WineRatingRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -12,19 +21,32 @@ import java.util.NoSuchElementException;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final WineRepository wineRepository;
+    private final WineRatingRepository wineRatingRepository;
 
-    public MemberService(MemberRepository memberRepository) {
+    public MemberService(MemberRepository memberRepository,
+                         WineRepository wineRepository,
+                         WineRatingRepository wineRatingRepository) {
         this.memberRepository = memberRepository;
+        this.wineRepository = wineRepository;
+        this.wineRatingRepository = wineRatingRepository;
     }
 
     public List<MemberDto> getAll() {
         return memberRepository.findAll().stream().map(this::toDto).toList();
     }
 
+    @Transactional(readOnly = true)
     public MemberDto getById(Long id) {
-        return memberRepository.findById(id)
-                .map(this::toDto)
+        Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Miembro no encontrado: " + id));
+        MemberDto dto = toDto(member);
+        if (member.getGrapeRatings() != null) {
+            dto.setGrapeRatings(member.getGrapeRatings().stream().map(this::toGrapeRatingDto).toList());
+        } else {
+            dto.setGrapeRatings(Collections.emptyList());
+        }
+        return dto;
     }
 
     public MemberDto create(MemberDto dto) {
@@ -34,7 +56,6 @@ public class MemberService {
         return toDto(memberRepository.save(toEntity(dto)));
     }
 
-    // Usado por webhooks: crea si no existe, devuelve el existente si ya está
     public MemberDto createOrSkip(MemberDto dto) {
         return memberRepository.findByEmail(dto.getEmail())
                 .map(this::toDto)
@@ -60,6 +81,29 @@ public class MemberService {
             throw new NoSuchElementException("Miembro no encontrado: " + id);
         }
         memberRepository.deleteById(id);
+    }
+
+    @Transactional
+    public WineRatingDto submitWineRating(Long memberId, WineRatingDto dto) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new NoSuchElementException("Miembro no encontrado: " + memberId));
+        Wine wine = wineRepository.findById(dto.getWineId())
+                .orElseThrow(() -> new NoSuchElementException("Vino no encontrado: " + dto.getWineId()));
+
+        WineRating rating = wineRatingRepository.findByMemberIdAndWineId(memberId, dto.getWineId())
+                .orElseGet(WineRating::new);
+
+        rating.setMember(member);
+        rating.setWine(wine);
+        rating.setRating(dto.getRating());
+        rating.setNotes(dto.getNotes());
+
+        return toWineRatingDto(wineRatingRepository.save(rating));
+    }
+
+    public List<WineRatingDto> getWineRatings(Long memberId) {
+        return wineRatingRepository.findByMemberId(memberId).stream()
+                .map(this::toWineRatingDto).toList();
     }
 
     private MemberDto toDto(Member m) {
@@ -88,5 +132,25 @@ public class MemberService {
         member.setOpenToNew(dto.getOpenToNew());
         member.setOccasions(dto.getOccasions());
         return member;
+    }
+
+    private MemberGrapeRatingDto toGrapeRatingDto(MemberGrapeRating gr) {
+        MemberGrapeRatingDto dto = new MemberGrapeRatingDto();
+        dto.setId(gr.getId());
+        dto.setGrape(gr.getGrape());
+        dto.setRating(gr.getRating());
+        return dto;
+    }
+
+    private WineRatingDto toWineRatingDto(WineRating wr) {
+        WineRatingDto dto = new WineRatingDto();
+        dto.setId(wr.getId());
+        dto.setMemberId(wr.getMember().getId());
+        dto.setWineId(wr.getWine().getId());
+        dto.setWineName(wr.getWine().getName());
+        dto.setRating(wr.getRating());
+        dto.setNotes(wr.getNotes());
+        dto.setRatedAt(wr.getRatedAt());
+        return dto;
     }
 }

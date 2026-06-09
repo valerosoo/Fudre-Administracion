@@ -1,6 +1,9 @@
 export type Plan = 'BROTE' | 'BROTE_PLUS' | 'ENVERO' | 'ENVERO_PLUS'
 export type WineCategory = 'BROTE' | 'ENVERO'
 export type UploadStatus = 'PENDING' | 'UPLOADED' | 'OUT_OF_STOCK'
+export type WineStyle = 'JOVENES' | 'MAS_CUERPO'
+export type ShipmentType = 'MEMBERSHIP' | 'STANDALONE'
+export type ShipmentStatus = 'PROPOSED' | 'CONFIRMED' | 'CANCELLED'
 
 export interface Wine {
   id?: number
@@ -26,6 +29,41 @@ export interface Member {
   address?: string
   tasteProfile?: string
   notes?: string
+}
+
+export interface MemberGrapeRating {
+  id?: number
+  grape: string
+  rating: number
+}
+
+export interface MemberDetail {
+  id?: number
+  name: string
+  email: string
+  phone?: string
+  deliveryAddress?: string
+  wineStyle?: WineStyle
+  wineTypes?: string
+  openToNew?: boolean
+  occasions?: string
+  createdAt?: string
+  grapeRatings?: MemberGrapeRating[]
+}
+
+export interface WineRating {
+  id?: number
+  memberId: number
+  wineId: number
+  wineName?: string
+  rating: number
+  notes?: string
+  ratedAt?: string
+}
+
+export interface RecommendationResult {
+  paraVos: Wine[]
+  nuevasExperiencias: Wine[]
 }
 
 export interface Membership {
@@ -55,6 +93,9 @@ export interface Shipment {
   shippedAt?: string
   shippingCost?: number
   notes?: string
+  tiendanubeOrderId?: string
+  type?: ShipmentType
+  status?: ShipmentStatus
   items?: ShipmentItem[]
 }
 

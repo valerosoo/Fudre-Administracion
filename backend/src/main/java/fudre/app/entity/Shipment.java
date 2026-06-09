@@ -33,6 +33,14 @@ public class Shipment {
     @Column(name = "tiendanube_order_id", unique = true)
     private String tiendanubeOrderId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ShipmentType type = ShipmentType.STANDALONE;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ShipmentStatus status = ShipmentStatus.CONFIRMED;
+
     @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL)
     private List<ShipmentItem> items;
 
@@ -49,6 +57,10 @@ public class Shipment {
     public void setNotes(String notes) { this.notes = notes; }
     public String getTiendanubeOrderId() { return tiendanubeOrderId; }
     public void setTiendanubeOrderId(String tiendanubeOrderId) { this.tiendanubeOrderId = tiendanubeOrderId; }
+    public ShipmentType getType() { return type; }
+    public void setType(ShipmentType type) { this.type = type; }
+    public ShipmentStatus getStatus() { return status; }
+    public void setStatus(ShipmentStatus status) { this.status = status; }
     public List<ShipmentItem> getItems() { return items; }
     public void setItems(List<ShipmentItem> items) { this.items = items; }
 }

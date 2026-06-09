@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { Pencil, Trash2, Plus } from 'lucide-react'
+import { Pencil, Trash2, Plus, Eye } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,6 +35,7 @@ export function MembersPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [deleteId, setDeleteId] = useState<number | null>(null)
+  const navigate = useNavigate()
 
   const [search, setSearch] = useState('')
 
@@ -154,6 +156,9 @@ export function MembersPage() {
                     <TableCell className="max-w-xs truncate">{m.tasteProfile ?? '—'}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">
+                        <Button size="icon" variant="ghost" onClick={() => navigate(`/members/${m.id}`)}>
+                          <Eye size={14} />
+                        </Button>
                         <Button size="icon" variant="ghost" onClick={() => openEdit(m)}>
                           <Pencil size={14} />
                         </Button>
