@@ -66,12 +66,59 @@ ARCHIVO:
 RESPUESTA (solo el JSON array):"""
 
 
+PRICE_LIST_PROMPT = """INSTRUCCIÓN CRÍTICA: Responde ÚNICAMENTE con un JSON objeto válido. NO escribas código. NO expliques nada. NO uses markdown. SOLO el JSON objeto y nada más.
+
+Analizá la siguiente lista de precios de un distribuidor de vinos y devolvé exactamente este formato:
+
+{{"distributor": {{"name": "Nombre de la empresa", "phone": "teléfono o null", "email": "mail@empresa.com o null"}}, "items": [{{"name": "Marca Varietal", "grape": "Cepa", "vintageYear": 2022, "purchasePrice": 15000, "imageUrl": null}}]}}
+
+Reglas:
+- distributor.name: buscá el nombre de la empresa en el encabezado, membrete o pie del documento. Si no aparece, usá "Distribuidor Desconocido".
+- distributor.phone: número de teléfono de la empresa, o null si no figura.
+- distributor.email: email de la empresa, o null si no figura.
+- items[].name: marca + varietal combinados (ej: "Achaval Malbec", "Norton Chardonnay").
+- items[].grape: solo la cepa principal (ej: "Malbec", "Chardonnay", "Blend").
+- items[].vintageYear: número entero del año de cosecha, o null si no figura.
+- items[].purchasePrice: precio entero en ARS sin $ ni puntos. Si el precio es por caja de 6 botellas, dividir por 6.
+- items[].imageUrl: solo si hay una URL literal en el documento (ej: https://...), de lo contrario null.
+- Ignorar filas de totales, subtotales, headers de columnas y notas al pie.
+
+LISTA DE PRECIOS:
+{content}
+
+RESPUESTA (solo el JSON objeto):"""
+
+
+ORDER_PROMPT = """INSTRUCCIÓN CRÍTICA: Responde ÚNICAMENTE con un JSON objeto válido. NO escribas código. NO expliques nada. NO uses markdown. SOLO el JSON objeto y nada más.
+
+Analizá el siguiente documento (puede ser una lista de pedido, un mensaje de texto, una imagen de whatsapp, un CSV o cualquier formato) y extraé los vinos/productos a pedir con sus cantidades.
+
+Devolvé exactamente este formato:
+
+{{"distributor": {{"name": "Nombre de la empresa o proveedor", "phone": "teléfono o null", "email": "mail o null"}}, "items": [{{"name": "Nombre del producto", "grape": "Cepa o null", "vintageYear": 2022, "purchasePrice": null, "quantity": 1}}]}}
+
+Reglas:
+- distributor.name: buscá el nombre del proveedor/empresa en el documento. Si no aparece, usá "Desconocido".
+- items[].name: nombre del producto tal como aparece.
+- items[].grape: cepa si se puede determinar, o null.
+- items[].vintageYear: año de cosecha si figura, o null.
+- items[].purchasePrice: precio si figura, o null.
+- items[].quantity: cantidad solicitada si figura, o 1 por defecto.
+
+DOCUMENTO:
+{content}
+
+RESPUESTA (solo el JSON objeto):"""
+
+
 def get_prompt(entity: str, content: str) -> str:
     prompts = {
         "wines":        WINES_PROMPT,
         "members":      MEMBERS_PROMPT,
         "memberships":  MEMBERSHIPS_PROMPT,
         "shipments":    SHIPMENTS_PROMPT,
+        "price_list":   PRICE_LIST_PROMPT,
+        "order":        ORDER_PROMPT,
     }
     template = prompts.get(entity)
     if not template:

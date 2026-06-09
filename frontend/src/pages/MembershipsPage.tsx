@@ -4,7 +4,6 @@ import { toast } from 'sonner'
 import { Pencil, Trash2, Plus } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { ImportButton } from '@/components/ImportButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
@@ -105,7 +104,6 @@ export function MembershipsPage() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-semibold">Membresías</h1>
         <div className="flex gap-2">
-          <ImportButton entity="memberships" onSuccess={load} />
           <Button onClick={openCreate} disabled={members.length === 0}>
             <Plus size={16} /> Nueva membresía
           </Button>

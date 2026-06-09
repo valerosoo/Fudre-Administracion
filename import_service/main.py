@@ -59,7 +59,7 @@ def import_preview(entity):
     Recibe el archivo, lo procesa con AI y devuelve un preview de los datos
     extraídos (sin insertar en la BD todavía).
     """
-    if entity not in ("wines", "members", "memberships", "shipments"):
+    if entity not in ("wines", "members", "memberships", "shipments", "price_list", "order"):
         return jsonify({"error": f"Entidad desconocida: '{entity}'"}), 400
 
     if "file" not in request.files:
@@ -100,6 +100,18 @@ def import_preview(entity):
         print(f"[DEBUG] Error parsing JSON: {e}")
         return jsonify({"error": str(e)}), 500
 
+    # Para "price_list" y "order", el AI devuelve { distributor: {...}, items: [...] }
+    if entity in ("price_list", "order") and isinstance(data, dict):
+        items = data.get("items", [])
+        if not isinstance(items, list):
+            items = []
+        return jsonify({
+            "entity": entity,
+            "distributor": data.get("distributor", {}),
+            "items": items,
+            "count": len(items),
+        })
+
     # Para "members", el AI puede devolver { members: [...], memberships: [...] }
     if entity == "members" and isinstance(data, dict):
         return jsonify({
@@ -124,7 +136,25 @@ def import_confirm(entity):
     body = request.json or {}
     results = {"success": 0, "errors": []}
 
-    if entity == "members":
+    if entity == "price_list":
+        try:
+            payload = {"distributor": body.get("distributor", {}), "items": body.get("items", [])}
+            r = req.post(f"{BACKEND_URL}/price-list/upsert", json=payload, timeout=30)
+            r.raise_for_status()
+            results["success"] = len(r.json())
+        except Exception as e:
+            results["errors"].append(str(e))
+
+    elif entity == "order":
+        try:
+            payload = {"distributor": body.get("distributor", {}), "items": body.get("items", [])}
+            r = req.post(f"{BACKEND_URL}/orders/import", json=payload, timeout=30)
+            r.raise_for_status()
+            results["success"] = len(r.json().get("items", []))
+        except Exception as e:
+            results["errors"].append(str(e))
+
+    elif entity == "members":
         # Insertar miembros y luego membresías relacionadas
         members_data = body.get("members", [])
         memberships_data = body.get("memberships", [])

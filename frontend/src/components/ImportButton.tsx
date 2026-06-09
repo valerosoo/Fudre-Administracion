@@ -8,7 +8,7 @@ import {
 
 const IMPORT_URL = 'http://localhost:8081'
 
-type Entity = 'wines' | 'members' | 'memberships' | 'shipments'
+type Entity = 'wines' | 'members' | 'memberships' | 'shipments' | 'price_list' | 'order'
 
 interface Props {
   entity: Entity
@@ -20,6 +20,8 @@ const ENTITY_LABELS: Record<Entity, string> = {
   members:      'miembros',
   memberships:  'membresías',
   shipments:    'envíos',
+  price_list:   'lista de precios',
+  order:        'pedido',
 }
 
 // Campos relevantes a mostrar en el preview por entidad
@@ -28,6 +30,8 @@ const PREVIEW_FIELDS: Record<Entity, string[]> = {
   members:     ['name', 'email', 'phone', 'address'],
   memberships: ['memberName', 'plan', 'startDate', 'isActive'],
   shipments:   ['memberName', 'shippedAt', 'shippingCost'],
+  price_list:  ['name', 'grape', 'vintageYear', 'purchasePrice'],
+  order:       ['name', 'grape', 'vintageYear', 'purchasePrice', 'quantity'],
 }
 
 function PreviewTable({ items, entity }: { items: Record<string, unknown>[]; entity: Entity }) {
@@ -80,6 +84,8 @@ interface PreviewData {
   preview?: Record<string, unknown>[]
   members?: Record<string, unknown>[]
   memberships?: Record<string, unknown>[]
+  distributor?: { name: string; phone?: string; email?: string }
+  items?: Record<string, unknown>[]
   count: number
 }
 
@@ -125,9 +131,14 @@ export function ImportButton({ entity, onSuccess }: Props) {
     if (!data) return
     setConfirming(true)
     try {
-      const body = entity === 'members'
-        ? { members: data.members, memberships: data.memberships }
-        : { items: data.preview }
+      let body: unknown
+      if (entity === 'members') {
+        body = { members: data.members, memberships: data.memberships }
+      } else if (entity === 'price_list' || entity === 'order') {
+        body = { distributor: data.distributor, items: data.items }
+      } else {
+        body = { items: data.preview }
+      }
 
       const res = await fetch(`${IMPORT_URL}/import/${entity}/confirm`, {
         method: 'POST',
@@ -155,6 +166,8 @@ export function ImportButton({ entity, onSuccess }: Props) {
 
   const totalItems = entity === 'members'
     ? (data?.members?.length ?? 0) + (data?.memberships?.length ?? 0)
+    : entity === 'price_list' || entity === 'order'
+    ? (data?.items?.length ?? 0)
     : (data?.count ?? 0)
 
   return (
@@ -218,6 +231,23 @@ export function ImportButton({ entity, onSuccess }: Props) {
                     {ENTITY_LABELS[entity]} ({data.preview.length})
                   </p>
                   <PreviewTable items={data.preview} entity={entity} />
+                </div>
+              )}
+
+              {/* Lista de precios / Pedido */}
+              {(entity === 'price_list' || entity === 'order') && data.distributor && (
+                <div className="rounded border border-input bg-muted/30 px-4 py-3 text-sm space-y-0.5">
+                  <p className="font-semibold">{data.distributor.name}</p>
+                  {data.distributor.phone && <p className="text-muted-foreground">Tel: {data.distributor.phone}</p>}
+                  {data.distributor.email && <p className="text-muted-foreground">Email: {data.distributor.email}</p>}
+                </div>
+              )}
+              {(entity === 'price_list' || entity === 'order') && data.items && data.items.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold uppercase text-muted-foreground mb-1">
+                    Vinos ({data.items.length})
+                  </p>
+                  <PreviewTable items={data.items} entity={entity} />
                 </div>
               )}
 
