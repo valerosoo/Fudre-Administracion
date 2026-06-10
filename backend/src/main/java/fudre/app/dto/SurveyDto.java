@@ -1,14 +1,10 @@
 package fudre.app.dto;
 
 import fudre.app.entity.WineStyle;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
-public class MemberDto {
-
-    private Long id;
-    private String name;
-    private String email;
+public class SurveyDto {
     private String phone;
     private String deliveryAddress;
     private WineStyle wineStyle;
@@ -18,16 +14,10 @@ public class MemberDto {
     private String knowledge;
     private String frequency;
     private String budget;
-    private LocalDateTime surveyCompletedAt;
-    private LocalDateTime createdAt;
-    private List<MemberGrapeRatingDto> grapeRatings;
+    private String comments;
+    // grape -> rating (1-5)
+    private Map<String, Integer> grapeRatings;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
     public String getDeliveryAddress() { return deliveryAddress; }
@@ -46,10 +36,8 @@ public class MemberDto {
     public void setFrequency(String frequency) { this.frequency = frequency; }
     public String getBudget() { return budget; }
     public void setBudget(String budget) { this.budget = budget; }
-    public LocalDateTime getSurveyCompletedAt() { return surveyCompletedAt; }
-    public void setSurveyCompletedAt(LocalDateTime surveyCompletedAt) { this.surveyCompletedAt = surveyCompletedAt; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public List<MemberGrapeRatingDto> getGrapeRatings() { return grapeRatings; }
-    public void setGrapeRatings(List<MemberGrapeRatingDto> grapeRatings) { this.grapeRatings = grapeRatings; }
+    public String getComments() { return comments; }
+    public void setComments(String comments) { this.comments = comments; }
+    public Map<String, Integer> getGrapeRatings() { return grapeRatings; }
+    public void setGrapeRatings(Map<String, Integer> grapeRatings) { this.grapeRatings = grapeRatings; }
 }

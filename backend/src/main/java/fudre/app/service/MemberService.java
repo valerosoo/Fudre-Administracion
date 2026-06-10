@@ -2,17 +2,21 @@ package fudre.app.service;
 
 import fudre.app.dto.MemberDto;
 import fudre.app.dto.MemberGrapeRatingDto;
+import fudre.app.dto.SurveyDto;
 import fudre.app.dto.WineRatingDto;
 import fudre.app.entity.Member;
 import fudre.app.entity.MemberGrapeRating;
 import fudre.app.entity.Wine;
 import fudre.app.entity.WineRating;
+import fudre.app.repository.MemberGrapeRatingRepository;
 import fudre.app.repository.MemberRepository;
 import fudre.app.repository.WineRepository;
 import fudre.app.repository.WineRatingRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -21,15 +25,21 @@ import java.util.NoSuchElementException;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final MemberGrapeRatingRepository grapeRatingRepository;
     private final WineRepository wineRepository;
     private final WineRatingRepository wineRatingRepository;
+    private final EmailService emailService;
 
     public MemberService(MemberRepository memberRepository,
+                         MemberGrapeRatingRepository grapeRatingRepository,
                          WineRepository wineRepository,
-                         WineRatingRepository wineRatingRepository) {
+                         WineRatingRepository wineRatingRepository,
+                         EmailService emailService) {
         this.memberRepository = memberRepository;
+        this.grapeRatingRepository = grapeRatingRepository;
         this.wineRepository = wineRepository;
         this.wineRatingRepository = wineRatingRepository;
+        this.emailService = emailService;
     }
 
     public List<MemberDto> getAll() {
@@ -106,6 +116,42 @@ public class MemberService {
                 .map(this::toWineRatingDto).toList();
     }
 
+    @Transactional
+    public MemberDto saveSurvey(Long memberId, SurveyDto dto) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new NoSuchElementException("Miembro no encontrado: " + memberId));
+
+        if (dto.getPhone() != null) member.setPhone(dto.getPhone());
+        if (dto.getDeliveryAddress() != null) member.setDeliveryAddress(dto.getDeliveryAddress());
+        if (dto.getWineStyle() != null) member.setWineStyle(dto.getWineStyle());
+        if (dto.getWineTypes() != null) member.setWineTypes(dto.getWineTypes());
+        if (dto.getOpenToNew() != null) member.setOpenToNew(dto.getOpenToNew());
+        if (dto.getOccasions() != null) member.setOccasions(dto.getOccasions());
+        if (dto.getKnowledge() != null) member.setKnowledge(dto.getKnowledge());
+        if (dto.getFrequency() != null) member.setFrequency(dto.getFrequency());
+        if (dto.getBudget() != null) member.setBudget(dto.getBudget());
+        member.setSurveyCompletedAt(LocalDateTime.now());
+        memberRepository.save(member);
+
+        if (dto.getGrapeRatings() != null && !dto.getGrapeRatings().isEmpty()) {
+            grapeRatingRepository.deleteByMemberId(memberId);
+            List<MemberGrapeRating> ratings = new ArrayList<>();
+            dto.getGrapeRatings().forEach((grape, rating) -> {
+                if (rating != null && rating >= 1 && rating <= 5) {
+                    MemberGrapeRating gr = new MemberGrapeRating();
+                    gr.setMember(member);
+                    gr.setGrape(grape);
+                    gr.setRating(rating);
+                    ratings.add(gr);
+                }
+            });
+            grapeRatingRepository.saveAll(ratings);
+        }
+
+        emailService.sendSurveyWelcome(member);
+        return getById(memberId);
+    }
+
     private MemberDto toDto(Member m) {
         MemberDto dto = new MemberDto();
         dto.setId(m.getId());
@@ -117,6 +163,10 @@ public class MemberService {
         dto.setWineTypes(m.getWineTypes());
         dto.setOpenToNew(m.getOpenToNew());
         dto.setOccasions(m.getOccasions());
+        dto.setKnowledge(m.getKnowledge());
+        dto.setFrequency(m.getFrequency());
+        dto.setBudget(m.getBudget());
+        dto.setSurveyCompletedAt(m.getSurveyCompletedAt());
         dto.setCreatedAt(m.getCreatedAt());
         return dto;
     }
@@ -131,6 +181,9 @@ public class MemberService {
         member.setWineTypes(dto.getWineTypes());
         member.setOpenToNew(dto.getOpenToNew());
         member.setOccasions(dto.getOccasions());
+        member.setKnowledge(dto.getKnowledge());
+        member.setFrequency(dto.getFrequency());
+        member.setBudget(dto.getBudget());
         return member;
     }
 

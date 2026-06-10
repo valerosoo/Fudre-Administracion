@@ -35,6 +35,13 @@ public class Member {
 
     private String occasions;
 
+    private String knowledge;
+    private String frequency;
+    private String budget;
+
+    @Column(name = "survey_completed_at")
+    private LocalDateTime surveyCompletedAt;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -61,6 +68,14 @@ public class Member {
     public void setOpenToNew(Boolean openToNew) { this.openToNew = openToNew; }
     public String getOccasions() { return occasions; }
     public void setOccasions(String occasions) { this.occasions = occasions; }
+    public String getKnowledge() { return knowledge; }
+    public void setKnowledge(String knowledge) { this.knowledge = knowledge; }
+    public String getFrequency() { return frequency; }
+    public void setFrequency(String frequency) { this.frequency = frequency; }
+    public String getBudget() { return budget; }
+    public void setBudget(String budget) { this.budget = budget; }
+    public LocalDateTime getSurveyCompletedAt() { return surveyCompletedAt; }
+    public void setSurveyCompletedAt(LocalDateTime surveyCompletedAt) { this.surveyCompletedAt = surveyCompletedAt; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public List<MemberGrapeRating> getGrapeRatings() { return grapeRatings; }
     public List<Membership> getMemberships() { return memberships; }

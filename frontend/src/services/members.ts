@@ -10,4 +10,6 @@ export const membersService = {
   getWineRatings: (memberId: number) => api.get<WineRating[]>(`/members/${memberId}/wine-ratings`),
   submitWineRating: (memberId: number, rating: WineRating) =>
     api.post<WineRating>(`/members/${memberId}/wine-ratings`, rating),
+  saveSurvey: (memberId: number, data: object) =>
+    api.put<MemberDetail>(`/members/${memberId}/survey`, data),
 }

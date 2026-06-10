@@ -2,6 +2,7 @@ package fudre.app.controller;
 
 import fudre.app.dto.MemberDto;
 import fudre.app.dto.RecommendationDto;
+import fudre.app.dto.SurveyDto;
 import fudre.app.dto.WineRatingDto;
 import fudre.app.service.MemberService;
 import fudre.app.service.RecommendationService;
@@ -63,5 +64,10 @@ public class MemberController {
     @GetMapping("/{memberId}/recommendations")
     public RecommendationDto getRecommendations(@PathVariable Long memberId) {
         return recommendationService.getRecommendations(memberId);
+    }
+
+    @PutMapping("/{memberId}/survey")
+    public MemberDto saveSurvey(@PathVariable Long memberId, @RequestBody SurveyDto dto) {
+        return memberService.saveSurvey(memberId, dto);
     }
 }
