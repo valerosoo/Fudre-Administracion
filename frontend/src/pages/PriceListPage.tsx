@@ -18,6 +18,10 @@ import type { PriceListItem } from '@/types'
 
 const SELECT_CLS = 'h-10 rounded-md border border-input bg-background px-3 text-sm'
 
+function formatMoney(value?: number | null) {
+  return value == null ? '—' : `$${value.toLocaleString('es-AR')}`
+}
+
 const PURPOSES = [
   { value: 'TIENDA', label: 'Para la tienda', desc: 'Se pondrá a la venta en la tienda' },
   { value: 'EVENTO', label: 'Para un evento', desc: 'Reservado para un evento próximo' },
@@ -154,7 +158,9 @@ export function PriceListPage() {
                 <TableHead>Nombre</TableHead>
                 <TableHead>Uva</TableHead>
                 <TableHead>Año</TableHead>
-                <TableHead className="text-right">Precio compra</TableHead>
+                <TableHead className="text-right">Precio unit.</TableHead>
+                <TableHead className="text-right">Precio caja</TableHead>
+                <TableHead className="text-right">PVP recom.</TableHead>
                 <TableHead>Distribuidor</TableHead>
                 <TableHead className="w-36 text-center">Agregar</TableHead>
               </TableRow>
@@ -175,7 +181,13 @@ export function PriceListPage() {
                   <TableCell>{item.grape ?? '—'}</TableCell>
                   <TableCell>{item.vintageYear ?? '—'}</TableCell>
                   <TableCell className="text-right">
-                    ${item.purchasePrice?.toLocaleString('es-AR')}
+                    {formatMoney(item.purchasePrice)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {formatMoney(item.boxPurchasePrice)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {formatMoney(item.recommendedSalePrice)}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{item.distributorName}</TableCell>
                   <TableCell>

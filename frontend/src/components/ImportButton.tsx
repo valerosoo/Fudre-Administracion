@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { Upload, X, Check, ChevronDown, ChevronUp } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog'
@@ -30,14 +31,65 @@ const PREVIEW_FIELDS: Record<Entity, string[]> = {
   members:     ['name', 'email', 'phone', 'address'],
   memberships: ['memberName', 'plan', 'startDate', 'isActive'],
   shipments:   ['memberName', 'shippedAt', 'shippingCost'],
-  price_list:  ['name', 'grape', 'vintageYear', 'purchasePrice'],
+  price_list:  ['imageUrl', 'name', 'grape', 'vintageYear', 'purchasePrice', 'boxPurchasePrice', 'recommendedSalePrice'],
   order:       ['name', 'grape', 'vintageYear', 'purchasePrice', 'quantity'],
 }
 
-function PreviewTable({ items, entity }: { items: Record<string, unknown>[]; entity: Entity }) {
+const FIELD_LABELS: Record<string, string> = {
+  name: 'Nombre',
+  grape: 'Uva',
+  vintageYear: 'Año',
+  referencePrice: 'Precio ref.',
+  uploadStatus: 'Estado',
+  email: 'Email',
+  phone: 'Teléfono',
+  address: 'Dirección',
+  memberName: 'Miembro',
+  plan: 'Plan',
+  startDate: 'Inicio',
+  isActive: 'Activa',
+  shippedAt: 'Fecha',
+  shippingCost: 'Envío',
+  purchasePrice: 'Precio unit.',
+  boxPurchasePrice: 'Precio caja',
+  recommendedSalePrice: 'PVP recomendado',
+  quantity: 'Cantidad',
+  imageUrl: 'Imagen',
+}
+
+const NUMERIC_FIELDS = new Set([
+  'vintageYear',
+  'referencePrice',
+  'shippingCost',
+  'purchasePrice',
+  'boxPurchasePrice',
+  'recommendedSalePrice',
+  'quantity',
+])
+
+function parseFieldValue(field: string, value: string) {
+  if (value.trim() === '') return null
+  if (!NUMERIC_FIELDS.has(field)) return value
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+function PreviewTable({
+  items,
+  entity,
+  editable = false,
+  onChange,
+}: {
+  items: Record<string, unknown>[]
+  entity: Entity
+  editable?: boolean
+  onChange?: (index: number, field: string, value: unknown) => void
+}) {
   const fields = PREVIEW_FIELDS[entity]
   const [expanded, setExpanded] = useState(false)
-  const visible = expanded ? items : items.slice(0, 5)
+  const visible = expanded
+    ? items.map((row, index) => ({ row, index }))
+    : items.slice(0, 5).map((row, index) => ({ row, index }))
 
   return (
     <div className="text-sm">
@@ -47,17 +99,45 @@ function PreviewTable({ items, entity }: { items: Record<string, unknown>[]; ent
             <tr className="bg-muted">
               {fields.map(f => (
                 <th key={f} className="px-3 py-2 text-left font-medium text-muted-foreground whitespace-nowrap">
-                  {f}
+                  {FIELD_LABELS[f] ?? f}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {visible.map((row, i) => (
-              <tr key={i} className="border-t border-input">
+            {visible.map(({ row, index }) => (
+              <tr key={index} className="border-t border-input">
                 {fields.map(f => (
-                  <td key={f} className="px-3 py-1.5 max-w-[200px] truncate">
-                    {String(row[f] ?? '—')}
+                  <td key={f} className={f === 'imageUrl' ? 'px-3 py-1.5 min-w-48 max-w-64' : 'px-3 py-1.5 min-w-28 max-w-52'}>
+                    {editable && f === 'imageUrl' ? (
+                      <div className="flex items-center gap-2">
+                        {typeof row[f] === 'string' && row[f] ? (
+                          <img src={row[f]} alt="" className="h-8 w-8 rounded object-cover bg-muted" />
+                        ) : (
+                          <div className="h-8 w-8 rounded bg-muted" />
+                        )}
+                        <Input
+                          type="text"
+                          value={row[f] == null ? '' : String(row[f])}
+                          onChange={e => onChange?.(index, f, e.target.value.trim() === '' ? null : e.target.value)}
+                          placeholder="URL imagen"
+                          className="h-8 text-xs"
+                        />
+                      </div>
+                    ) : editable ? (
+                      <Input
+                        type={NUMERIC_FIELDS.has(f) ? 'number' : 'text'}
+                        value={row[f] == null ? '' : String(row[f])}
+                        onChange={e => onChange?.(index, f, parseFieldValue(f, e.target.value))}
+                        className="h-8 text-xs"
+                      />
+                    ) : (
+                      f === 'imageUrl' && typeof row[f] === 'string' && row[f] ? (
+                        <img src={row[f]} alt="" className="h-8 w-8 rounded object-cover bg-muted" />
+                      ) : (
+                        <span className="block truncate">{String(row[f] ?? '-')}</span>
+                      )
+                    )}
                   </td>
                 ))}
               </tr>
@@ -84,8 +164,9 @@ interface PreviewData {
   preview?: Record<string, unknown>[]
   members?: Record<string, unknown>[]
   memberships?: Record<string, unknown>[]
-  distributor?: { name: string; phone?: string; email?: string }
+  distributor?: { name: string; phone?: string | null; email?: string | null }
   items?: Record<string, unknown>[]
+  imageCandidates?: string[]
   count: number
 }
 
@@ -164,6 +245,41 @@ export function ImportButton({ entity, onSuccess }: Props) {
     if (file) processFile(file)
   }
 
+  function updateRows(section: 'preview' | 'members' | 'memberships' | 'items', index: number, field: string, value: unknown) {
+    setData(prev => {
+      if (!prev) return prev
+      const rows = prev[section]
+      if (!rows) return prev
+      return {
+        ...prev,
+        [section]: rows.map((row, i) => i === index ? { ...row, [field]: value } : row),
+      }
+    })
+  }
+
+  function updateDistributor(field: 'name' | 'phone' | 'email', value: string) {
+    setData(prev => {
+      if (!prev) return prev
+      const distributor = prev.distributor ?? { name: '' }
+      return {
+        ...prev,
+        distributor: {
+          ...distributor,
+          [field]: field === 'name' ? value : value.trim() === '' ? null : value,
+        },
+      }
+    })
+  }
+
+  async function copyImageUrl(url: string) {
+    try {
+      await navigator.clipboard.writeText(url)
+      toast.success('URL de imagen copiada')
+    } catch {
+      toast.error('No se pudo copiar la URL')
+    }
+  }
+
   const totalItems = entity === 'members'
     ? (data?.members?.length ?? 0) + (data?.memberships?.length ?? 0)
     : entity === 'price_list' || entity === 'order'
@@ -204,13 +320,13 @@ export function ImportButton({ entity, onSuccess }: Props) {
                 <>
                   <p className="text-sm font-medium">Arrastrá el archivo acá</p>
                   <p className="text-xs text-muted-foreground mt-1">o hacé click para seleccionar</p>
-                  <p className="text-xs text-muted-foreground mt-3">PDF · Excel · CSV</p>
+                  <p className="text-xs text-muted-foreground mt-3">PDF · Excel · CSV · Imagen</p>
                 </>
               )}
               <input
                 ref={fileRef}
                 type="file"
-                accept=".pdf,.xlsx,.xls,.csv"
+                accept=".pdf,.xlsx,.xls,.csv,.jpg,.jpeg,.png,.webp,.gif"
                 className="hidden"
                 onChange={e => { if (e.target.files?.[0]) processFile(e.target.files[0]) }}
               />
@@ -230,16 +346,61 @@ export function ImportButton({ entity, onSuccess }: Props) {
                   <p className="text-xs font-semibold uppercase text-muted-foreground mb-1">
                     {ENTITY_LABELS[entity]} ({data.preview.length})
                   </p>
-                  <PreviewTable items={data.preview} entity={entity} />
+                  <PreviewTable
+                    items={data.preview}
+                    entity={entity}
+                    editable
+                    onChange={(index, field, value) => updateRows('preview', index, field, value)}
+                  />
                 </div>
               )}
 
               {/* Lista de precios / Pedido */}
               {(entity === 'price_list' || entity === 'order') && data.distributor && (
-                <div className="rounded border border-input bg-muted/30 px-4 py-3 text-sm space-y-0.5">
-                  <p className="font-semibold">{data.distributor.name}</p>
-                  {data.distributor.phone && <p className="text-muted-foreground">Tel: {data.distributor.phone}</p>}
-                  {data.distributor.email && <p className="text-muted-foreground">Email: {data.distributor.email}</p>}
+                <div className="rounded border border-input bg-muted/30 px-4 py-3 text-sm">
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    <Input
+                      value={data.distributor.name ?? ''}
+                      onChange={e => updateDistributor('name', e.target.value)}
+                      placeholder="Distribuidor"
+                      className="h-8 text-xs font-medium"
+                    />
+                    <Input
+                      value={data.distributor.phone ?? ''}
+                      onChange={e => updateDistributor('phone', e.target.value)}
+                      placeholder="Teléfono"
+                      className="h-8 text-xs"
+                    />
+                    <Input
+                      value={data.distributor.email ?? ''}
+                      onChange={e => updateDistributor('email', e.target.value)}
+                      placeholder="Email"
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                </div>
+              )}
+              {(entity === 'price_list' || entity === 'order') && data.imageCandidates && data.imageCandidates.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold uppercase text-muted-foreground mb-1">
+                    Imágenes detectadas ({data.imageCandidates.length})
+                  </p>
+                  <div className="flex gap-2 overflow-x-auto rounded border border-input p-2">
+                    {data.imageCandidates.map(url => (
+                      <div key={url} className="w-28 shrink-0 space-y-1">
+                        <img src={url} alt="" className="h-20 w-28 rounded object-cover bg-muted" />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyImageUrl(url)}
+                          className="h-7 w-full text-xs"
+                        >
+                          Copiar URL
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
               {(entity === 'price_list' || entity === 'order') && data.items && data.items.length > 0 && (
@@ -247,7 +408,12 @@ export function ImportButton({ entity, onSuccess }: Props) {
                   <p className="text-xs font-semibold uppercase text-muted-foreground mb-1">
                     Vinos ({data.items.length})
                   </p>
-                  <PreviewTable items={data.items} entity={entity} />
+                  <PreviewTable
+                    items={data.items}
+                    entity={entity}
+                    editable
+                    onChange={(index, field, value) => updateRows('items', index, field, value)}
+                  />
                 </div>
               )}
 
@@ -257,7 +423,12 @@ export function ImportButton({ entity, onSuccess }: Props) {
                   <p className="text-xs font-semibold uppercase text-muted-foreground mb-1">
                     Miembros ({data.members.length})
                   </p>
-                  <PreviewTable items={data.members} entity="members" />
+                  <PreviewTable
+                    items={data.members}
+                    entity="members"
+                    editable
+                    onChange={(index, field, value) => updateRows('members', index, field, value)}
+                  />
                 </div>
               )}
 
@@ -267,7 +438,12 @@ export function ImportButton({ entity, onSuccess }: Props) {
                   <p className="text-xs font-semibold uppercase text-muted-foreground mb-1">
                     Membresías detectadas ({data.memberships.length})
                   </p>
-                  <PreviewTable items={data.memberships} entity="memberships" />
+                  <PreviewTable
+                    items={data.memberships}
+                    entity="memberships"
+                    editable
+                    onChange={(index, field, value) => updateRows('memberships', index, field, value)}
+                  />
                 </div>
               )}
             </div>

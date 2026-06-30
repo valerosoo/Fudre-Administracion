@@ -13,6 +13,8 @@ public class PriceListItemDto {
     private String grape;
     private Integer vintageYear;
     private BigDecimal purchasePrice;
+    private BigDecimal boxPurchasePrice;
+    private BigDecimal recommendedSalePrice;
     private String imageUrl;
     private LocalDateTime updatedAt;
 
@@ -34,6 +36,10 @@ public class PriceListItemDto {
     public void setVintageYear(Integer vintageYear) { this.vintageYear = vintageYear; }
     public BigDecimal getPurchasePrice() { return purchasePrice; }
     public void setPurchasePrice(BigDecimal purchasePrice) { this.purchasePrice = purchasePrice; }
+    public BigDecimal getBoxPurchasePrice() { return boxPurchasePrice; }
+    public void setBoxPurchasePrice(BigDecimal boxPurchasePrice) { this.boxPurchasePrice = boxPurchasePrice; }
+    public BigDecimal getRecommendedSalePrice() { return recommendedSalePrice; }
+    public void setRecommendedSalePrice(BigDecimal recommendedSalePrice) { this.recommendedSalePrice = recommendedSalePrice; }
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

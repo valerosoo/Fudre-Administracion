@@ -27,6 +27,12 @@ public class PriceListItem {
     @Column(name = "purchase_price", precision = 10, scale = 2)
     private BigDecimal purchasePrice;
 
+    @Column(name = "box_purchase_price", precision = 10, scale = 2)
+    private BigDecimal boxPurchasePrice;
+
+    @Column(name = "recommended_sale_price", precision = 10, scale = 2)
+    private BigDecimal recommendedSalePrice;
+
     @Column(name = "image_url")
     private String imageUrl;
 
@@ -44,6 +50,10 @@ public class PriceListItem {
     public void setVintageYear(Integer vintageYear) { this.vintageYear = vintageYear; }
     public BigDecimal getPurchasePrice() { return purchasePrice; }
     public void setPurchasePrice(BigDecimal purchasePrice) { this.purchasePrice = purchasePrice; }
+    public BigDecimal getBoxPurchasePrice() { return boxPurchasePrice; }
+    public void setBoxPurchasePrice(BigDecimal boxPurchasePrice) { this.boxPurchasePrice = boxPurchasePrice; }
+    public BigDecimal getRecommendedSalePrice() { return recommendedSalePrice; }
+    public void setRecommendedSalePrice(BigDecimal recommendedSalePrice) { this.recommendedSalePrice = recommendedSalePrice; }
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

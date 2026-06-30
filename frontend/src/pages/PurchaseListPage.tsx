@@ -11,6 +11,14 @@ import { purchaseListService } from '@/services/purchaseList'
 import { ordersService } from '@/services/orders'
 import type { PurchaseListItem } from '@/types'
 
+function unitPrice(item: PurchaseListItem) {
+  return item.purchasePrice ?? 0
+}
+
+function formatMoney(value?: number | null) {
+  return value == null ? '—' : `$${value.toLocaleString('es-AR')}`
+}
+
 export function PurchaseListPage() {
   const [items, setItems] = useState<PurchaseListItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -91,7 +99,7 @@ export function PurchaseListPage() {
     new Map()
   )
 
-  const grandTotal = items.reduce((sum, i) => sum + i.purchasePrice * i.quantity, 0)
+  const grandTotal = items.reduce((sum, i) => sum + unitPrice(i) * i.quantity, 0)
 
   return (
     <div>
@@ -118,7 +126,7 @@ export function PurchaseListPage() {
       ) : (
         <div className="space-y-8">
           {[...byDistributor.entries()].map(([distId, group]) => {
-            const subtotal = group.items.reduce((s, i) => s + i.purchasePrice * i.quantity, 0)
+            const subtotal = group.items.reduce((s, i) => s + unitPrice(i) * i.quantity, 0)
             return (
               <div key={distId} className="rounded-lg border bg-card overflow-hidden">
                 {/* Distributor header */}
@@ -165,7 +173,7 @@ export function PurchaseListPage() {
                         <td className="px-4 py-2 font-medium">{item.name}</td>
                         <td className="px-4 py-2 text-muted-foreground">{item.grape ?? '—'}</td>
                         <td className="px-4 py-2 text-muted-foreground">{item.vintageYear ?? '—'}</td>
-                        <td className="px-4 py-2 text-right">${item.purchasePrice.toLocaleString('es-AR')}</td>
+                        <td className="px-4 py-2 text-right">{formatMoney(item.purchasePrice)}</td>
                         <td className="px-4 py-2">
                           <div className="flex items-center justify-center gap-1">
                             <button
@@ -186,7 +194,7 @@ export function PurchaseListPage() {
                           </div>
                         </td>
                         <td className="px-4 py-2 text-right font-medium">
-                          ${(item.purchasePrice * item.quantity).toLocaleString('es-AR')}
+                          ${(unitPrice(item) * item.quantity).toLocaleString('es-AR')}
                         </td>
                         <td className="px-4 py-2 text-right">
                           <button

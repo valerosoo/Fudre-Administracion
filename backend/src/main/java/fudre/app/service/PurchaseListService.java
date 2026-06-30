@@ -90,6 +90,8 @@ public class PurchaseListService {
         dto.setGrape(pli.getGrape());
         dto.setVintageYear(pli.getVintageYear());
         dto.setPurchasePrice(pli.getPurchasePrice());
+        dto.setBoxPurchasePrice(pli.getBoxPurchasePrice());
+        dto.setRecommendedSalePrice(pli.getRecommendedSalePrice());
         dto.setImageUrl(pli.getImageUrl());
         dto.setDistributorId(d.getId());
         dto.setDistributorName(d.getName());

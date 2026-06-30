@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -39,11 +40,17 @@ public class PriceListService {
     @Transactional
     public List<PriceListItemDto> upsertBatch(PriceListImportDto importDto) {
         DistributorDto dDto = importDto.getDistributor();
+        if (dDto == null) {
+            dDto = new DistributorDto();
+        }
+        String distributorName = dDto.getName() == null || dDto.getName().isBlank()
+                ? "Distribuidor Desconocido"
+                : dDto.getName();
 
-        Distributor distributor = distributorRepository.findByName(dDto.getName())
+        Distributor distributor = distributorRepository.findByName(distributorName)
                 .orElseGet(() -> {
                     Distributor d = new Distributor();
-                    d.setName(dDto.getName());
+                    d.setName(distributorName);
                     return d;
                 });
 
@@ -51,7 +58,11 @@ public class PriceListService {
         if (dDto.getEmail() != null) distributor.setEmail(dDto.getEmail());
         distributorRepository.save(distributor);
 
-        List<PriceListItem> upserted = importDto.getItems().stream()
+        List<PriceListItemImportDto> items = importDto.getItems() == null
+                ? Collections.emptyList()
+                : importDto.getItems();
+
+        List<PriceListItem> upserted = items.stream()
                 .filter(i -> i.getName() != null && !i.getName().isBlank())
                 .map(i -> upsertItem(distributor, i))
                 .toList();
@@ -72,6 +83,8 @@ public class PriceListService {
                 });
 
         item.setPurchasePrice(dto.getPurchasePrice());
+        item.setBoxPurchasePrice(dto.getBoxPurchasePrice());
+        item.setRecommendedSalePrice(dto.getRecommendedSalePrice());
         if (dto.getImageUrl() != null) item.setImageUrl(dto.getImageUrl());
         item.setUpdatedAt(LocalDateTime.now());
         return priceListItemRepository.save(item);
@@ -89,6 +102,8 @@ public class PriceListService {
         dto.setGrape(item.getGrape());
         dto.setVintageYear(item.getVintageYear());
         dto.setPurchasePrice(item.getPurchasePrice());
+        dto.setBoxPurchasePrice(item.getBoxPurchasePrice());
+        dto.setRecommendedSalePrice(item.getRecommendedSalePrice());
         dto.setImageUrl(item.getImageUrl());
         dto.setUpdatedAt(item.getUpdatedAt());
         return dto;

@@ -70,7 +70,7 @@ PRICE_LIST_PROMPT = """INSTRUCCIÓN CRÍTICA: Responde ÚNICAMENTE con un JSON o
 
 Analizá la siguiente lista de precios de un distribuidor de vinos y devolvé exactamente este formato:
 
-{{"distributor": {{"name": "Nombre de la empresa", "phone": "teléfono o null", "email": "mail@empresa.com o null"}}, "items": [{{"name": "Marca Varietal", "grape": "Cepa", "vintageYear": 2022, "purchasePrice": 15000, "imageUrl": null}}]}}
+{{"distributor": {{"name": "Nombre de la empresa", "phone": "teléfono o null", "email": "mail@empresa.com o null"}}, "items": [{{"name": "Marca Varietal", "grape": "Cepa", "vintageYear": 2022, "purchasePrice": 15000, "boxPurchasePrice": 90000, "recommendedSalePrice": 22000, "imageUrl": null}}]}}
 
 Reglas:
 - distributor.name: buscá el nombre de la empresa en el encabezado, membrete o pie del documento. Si no aparece, usá "Distribuidor Desconocido".
@@ -79,8 +79,13 @@ Reglas:
 - items[].name: marca + varietal combinados (ej: "Achaval Malbec", "Norton Chardonnay").
 - items[].grape: solo la cepa principal (ej: "Malbec", "Chardonnay", "Blend").
 - items[].vintageYear: número entero del año de cosecha, o null si no figura.
-- items[].purchasePrice: precio entero en ARS sin $ ni puntos. Si el precio es por caja de 6 botellas, dividir por 6.
-- items[].imageUrl: solo si hay una URL literal en el documento (ej: https://...), de lo contrario null.
+- items[].purchasePrice: precio unitario de compra entero en ARS sin $ ni puntos. Usalo solo si aparece como precio unitario, botella, unidad, costo unitario o si la tabla indica claramente que los precios son por unidad. Si el unico precio visible es por caja y no hay unitario explicito, devolver null.
+- items[].boxPurchasePrice: precio de compra por caja entera en ARS sin $ ni puntos. Usalo solo si aparece explicitamente como caja, pack, bulto, x6, caja x 6, precio caja o similar. Si no esta escrito el precio por caja en el documento, devolver null. No lo calcules multiplicando el unitario.
+- items[].recommendedSalePrice: precio recomendado de venta al publico entero en ARS sin $ ni puntos. Solo si aparece explicitamente como PVP, precio sugerido, recomendado, venta o similar. Si no aparece, null.
+- items[].imageUrl: si hay una URL literal de imagen en el documento, usala. Si el contenido incluye IMAGENES_CANDIDATAS_PARA_IMAGE_URL, usa una de esas URLs solo cuando puedas asociarla claramente con ese vino por cercania visual, etiqueta o layout. Si no estas seguro, devolve null. Nunca inventes URLs.
+- Revisa todas las columnas visibles del PDF/imagen, aunque el texto extraido venga desordenado. Si un precio, cosecha, cepa o nombre esta visible en la tabla o etiqueta, extraelo.
+- No omitas vinos visibles. Si una fila tiene nombre visible pero algun dato no se puede leer, incluye el vino y deja ese dato en null.
+- Para cualquier otro atributo que no exista o no se pueda inferir con seguridad, devolver null. No inventes datos.
 - Ignorar filas de totales, subtotales, headers de columnas y notas al pie.
 
 LISTA DE PRECIOS:
@@ -124,7 +129,7 @@ def get_prompt(entity: str, content: str) -> str:
     if not template:
         raise ValueError(f"Entidad desconocida: {entity}")
     # Truncar contenido para no superar límites del modelo
-    max_chars = 6000
+    max_chars = 20000 if entity == "price_list" else 6000
     if len(content) > max_chars:
         content = content[:max_chars] + "\n... [contenido truncado]"
     return template.format(content=content)

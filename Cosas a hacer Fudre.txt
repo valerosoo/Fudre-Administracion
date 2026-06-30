@@ -1,0 +1,13 @@
+-Envios
+--Filtro por cliente, fecha, estado
+
+-Encuesta
+--Sacar plan suscripto
+--Agregar contraseña
+
+Editar en Fudre
+-Agregar que vinos vienen este mes
+-Suscribirme a una membresia
+-Ver mis gustos y editar
+-Historial de vinos que pedi/llegaron
+-Poder puntuar el ultimo envio que recibio (No lo probe, 1 al 5, puntuar cada vino por separado)

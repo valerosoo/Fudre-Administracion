@@ -115,7 +115,9 @@ export interface PriceListItem {
   name: string
   grape?: string
   vintageYear?: number
-  purchasePrice: number
+  purchasePrice?: number | null
+  boxPurchasePrice?: number | null
+  recommendedSalePrice?: number | null
   imageUrl?: string
   updatedAt?: string
 }
@@ -126,7 +128,9 @@ export interface PurchaseListItem {
   name: string
   grape?: string
   vintageYear?: number
-  purchasePrice: number
+  purchasePrice?: number | null
+  boxPurchasePrice?: number | null
+  recommendedSalePrice?: number | null
   imageUrl?: string
   distributorId: number
   distributorName: string
@@ -148,7 +152,7 @@ export interface OrderItem {
   name: string
   grape?: string
   vintageYear?: number
-  purchasePrice: number
+  purchasePrice?: number | null
   quantity: number
   subtotal?: number
   itemStatus?: OrderItemStatus
