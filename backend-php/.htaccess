@@ -1,0 +1,22 @@
+RewriteEngine On
+
+# Bloquear acceso directo a archivos sensibles
+<FilesMatch "^(config\.php)$">
+    Require all denied
+</FilesMatch>
+
+RewriteRule ^logs/ - [F,L]
+RewriteRule ^db/ - [F,L]
+RewriteRule ^vendor-manual/ - [F,L]
+RewriteRule ^lib/ - [F,L]
+RewriteRule ^controllers/ - [F,L]
+RewriteRule ^services/ - [F,L]
+
+# Archivos y directorios reales (uploads/, index.php) se sirven tal cual
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Todo lo demás pasa por el front controller
+RewriteRule ^ index.php [QSA,L]

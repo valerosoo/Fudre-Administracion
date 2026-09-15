@@ -1,6 +1,7 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { Wine, Users, CreditCard, Package, LogOut, List, ShoppingCart, ClipboardList, FileText } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { authService } from '@/services/auth'
 
 const navItems = [
   { to: '/wines',         label: 'Vinos',           icon: Wine         },
@@ -24,10 +25,16 @@ function useCurrentTime() {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation()
+  const navigate = useNavigate()
   const now = useCurrentTime()
 
   const timeStr = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
   const dateStr = now.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+
+  async function handleLogout() {
+    await authService.logout()
+    navigate('/login', { replace: true })
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', width: '100%' }}>
@@ -61,6 +68,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             className="navbar-logout"
             type="button"
             aria-label="Cerrar sesión"
+            onClick={handleLogout}
           >
             <LogOut size={17} color="#ffffff" />
           </button>

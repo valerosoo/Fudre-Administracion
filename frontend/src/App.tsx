@@ -9,22 +9,34 @@ import { PriceListPage } from '@/pages/PriceListPage'
 import { PurchaseListPage } from '@/pages/PurchaseListPage'
 import { OrdersPage } from '@/pages/OrdersPage'
 import { SurveyPage } from '@/pages/SurveyPage'
+import { LoginPage } from '@/pages/LoginPage'
 import { Toaster } from '@/components/ui/sonner'
+import { authService } from '@/services/auth'
+
+function RequireAuth({ children }: { children: React.ReactNode }) {
+  if (!authService.isLoggedIn()) {
+    return <Navigate to="/login" replace />
+  }
+  return <>{children}</>
+}
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        {/* Encuesta pública (demo): sin login, se va a mover a Tiendanube más adelante */}
+        <Route path="/survey" element={<SurveyPage />} />
+
         <Route path="/" element={<Navigate to="/wines" replace />} />
-        <Route path="/wines" element={<Layout><WinesPage /></Layout>} />
-        <Route path="/members" element={<Layout><MembersPage /></Layout>} />
-        <Route path="/members/:id" element={<Layout><MemberProfilePage /></Layout>} />
-        <Route path="/memberships" element={<Layout><MembershipsPage /></Layout>} />
-        <Route path="/shipments" element={<Layout><ShipmentsPage /></Layout>} />
-        <Route path="/price-list" element={<Layout><PriceListPage /></Layout>} />
-        <Route path="/purchase-list" element={<Layout><PurchaseListPage /></Layout>} />
-        <Route path="/orders" element={<Layout><OrdersPage /></Layout>} />
-        <Route path="/survey" element={<Layout><SurveyPage /></Layout>} />
+        <Route path="/wines" element={<RequireAuth><Layout><WinesPage /></Layout></RequireAuth>} />
+        <Route path="/members" element={<RequireAuth><Layout><MembersPage /></Layout></RequireAuth>} />
+        <Route path="/members/:id" element={<RequireAuth><Layout><MemberProfilePage /></Layout></RequireAuth>} />
+        <Route path="/memberships" element={<RequireAuth><Layout><MembershipsPage /></Layout></RequireAuth>} />
+        <Route path="/shipments" element={<RequireAuth><Layout><ShipmentsPage /></Layout></RequireAuth>} />
+        <Route path="/price-list" element={<RequireAuth><Layout><PriceListPage /></Layout></RequireAuth>} />
+        <Route path="/purchase-list" element={<RequireAuth><Layout><PurchaseListPage /></Layout></RequireAuth>} />
+        <Route path="/orders" element={<RequireAuth><Layout><OrdersPage /></Layout></RequireAuth>} />
       </Routes>
       <Toaster richColors />
     </BrowserRouter>
