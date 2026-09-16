@@ -1,10 +1,13 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { authService } from '@/services/auth'
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -14,40 +17,49 @@ export function LoginPage() {
     setError(null)
     setLoading(true)
     try {
-      await authService.login(password)
+      await authService.login(email, password)
       navigate('/wines', { replace: true })
     } catch {
-      setError('Contraseña incorrecta')
+      setError('Email o contraseña incorrectos')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: '#111111',
-    }}>
-      <form onSubmit={handleSubmit} style={{
-        background: '#ffffff', borderRadius: '12px', padding: '40px 36px', width: '340px',
-        display: 'flex', flexDirection: 'column', gap: '16px',
-      }}>
-        <img src="/logo.png" alt="FUDRE Wine Club" style={{ height: '48px', objectFit: 'contain', alignSelf: 'center', marginBottom: '8px' }} />
-        <label style={{ fontSize: '13px', color: '#333' }}>
-          Contraseña
-          <input
-            type="password"
+    <div className="flex min-h-screen w-full flex-col items-center justify-center gap-8 bg-[var(--sidebar-bg)] p-4">
+      <img src="/logo.png" alt="FUDRE Wine Club" className="h-16 object-contain" />
+
+      <form
+        onSubmit={handleSubmit}
+        className="flex w-full max-w-sm flex-col gap-5 rounded-xl bg-card p-10 shadow-2xl"
+      >
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
             autoFocus
+            autoComplete="username"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="password">Contraseña</Label>
+          <Input
+            id="password"
+            type="password"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={{
-              display: 'block', width: '100%', marginTop: '6px', padding: '8px 10px',
-              border: '1px solid #ccc', borderRadius: '6px', fontSize: '14px',
-            }}
           />
-        </label>
-        {error && <span style={{ color: '#c0392b', fontSize: '13px' }}>{error}</span>}
-        <Button type="submit" disabled={loading} style={{ background: '#7F654E' }}>
+        </div>
+
+        {error && <p className="text-sm text-destructive">{error}</p>}
+
+        <Button type="submit" disabled={loading} className="mt-1">
           {loading ? 'Ingresando...' : 'Ingresar'}
         </Button>
       </form>

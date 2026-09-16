@@ -1,0 +1,14 @@
+RewriteEngine On
+
+# No reescribir /api/ (lo maneja el backend PHP en su propio .htaccess)
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteRule ^ - [L]
+
+# Archivos y directorios reales se sirven tal cual
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Todo lo demás (rutas de React Router) cae en index.html
+RewriteRule ^ index.html [L]

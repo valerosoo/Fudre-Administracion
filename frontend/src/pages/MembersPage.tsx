@@ -18,8 +18,6 @@ import {
 import { membersService } from '@/services/members'
 import type { Member } from '@/types'
 
-const SELECT_CLS = 'h-10 rounded-md border border-input bg-background px-3 text-sm'
-
 const defaultValues: Member = {
   name: '',
   email: '',

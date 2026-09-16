@@ -17,6 +17,7 @@ asistente que armó este backend) para el detalle de decisiones de arquitectura.
 1. **Base de datos**: en phpMyAdmin, crear una base de datos y correr `db/schema.sql` una sola vez (o, si ya existe la base del backend Java, solo crear la tabla `admin_sessions` — está al final del archivo).
 2. **Config**: copiar `config.example.php` a `config.php` y completar:
    - Credenciales de MySQL (las mismas que configuraste en cPanel → "Bases de datos MySQL").
+   - `ADMIN_EMAIL`: el email con el que se inicia sesión en el panel.
    - `ADMIN_PASSWORD_HASH`: generar localmente con PHP:
      ```
      php -r "echo password_hash('tu-password', PASSWORD_BCRYPT), PHP_EOL;"
@@ -47,6 +48,6 @@ bien. Para que funcione de verdad, hay que "vendorear" PHPMailer a mano (sin Com
 
 ## Login
 
-- `POST /auth/login` `{"password": "..."}` → `{"token": "..."}`.
+- `POST /auth/login` `{"email": "...", "password": "..."}` → `{"token": "..."}`.
 - Mandar `Authorization: Bearer <token>` en todos los demás requests (el frontend ya lo hace automáticamente).
 - `POST /auth/logout` invalida el token actual.

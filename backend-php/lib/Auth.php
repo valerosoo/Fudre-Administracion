@@ -2,10 +2,10 @@
 
 class Auth
 {
-    public static function login(string $password): string
+    public static function login(string $email, string $password): string
     {
-        if (!password_verify($password, ADMIN_PASSWORD_HASH)) {
-            throw new UnauthorizedException('Contraseña incorrecta');
+        if (strcasecmp($email, ADMIN_EMAIL) !== 0 || !password_verify($password, ADMIN_PASSWORD_HASH)) {
+            throw new UnauthorizedException('Email o contraseña incorrectos');
         }
 
         $token = bin2hex(random_bytes(32));

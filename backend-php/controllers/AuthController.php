@@ -5,8 +5,9 @@ class AuthController
     public function login(): void
     {
         $body = Request::body();
+        $email = $body['email'] ?? '';
         $password = $body['password'] ?? '';
-        $token = Auth::login($password);
+        $token = Auth::login($email, $password);
         Response::json(['token' => $token]);
     }
 

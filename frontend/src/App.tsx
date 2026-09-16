@@ -10,6 +10,7 @@ import { PurchaseListPage } from '@/pages/PurchaseListPage'
 import { OrdersPage } from '@/pages/OrdersPage'
 import { SurveyPage } from '@/pages/SurveyPage'
 import { LoginPage } from '@/pages/LoginPage'
+import { GuidePage } from '@/pages/GuidePage'
 import { Toaster } from '@/components/ui/sonner'
 import { authService } from '@/services/auth'
 
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="/price-list" element={<RequireAuth><Layout><PriceListPage /></Layout></RequireAuth>} />
         <Route path="/purchase-list" element={<RequireAuth><Layout><PurchaseListPage /></Layout></RequireAuth>} />
         <Route path="/orders" element={<RequireAuth><Layout><OrdersPage /></Layout></RequireAuth>} />
+        <Route path="/guide" element={<RequireAuth><Layout><GuidePage /></Layout></RequireAuth>} />
       </Routes>
       <Toaster richColors />
     </BrowserRouter>

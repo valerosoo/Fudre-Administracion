@@ -12,6 +12,7 @@ backend/src/main/resources/application.properties
 
 # Backend PHP
 backend-php/config.php
+backend-php/config.production.php
 backend-php/logs
 backend-php/uploads
 backend-php/vendor-manual

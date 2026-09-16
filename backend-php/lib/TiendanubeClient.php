@@ -92,6 +92,11 @@ class TiendanubeClient
         return self::request('GET', "/orders/$orderId");
     }
 
+    public static function getCustomer(string $customerId): array
+    {
+        return self::request('GET', "/customers/$customerId");
+    }
+
     private static function priceString(?float $price): string
     {
         return $price !== null ? number_format($price, 2, '.', '') : '0';

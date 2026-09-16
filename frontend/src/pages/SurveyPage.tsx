@@ -17,7 +17,6 @@ const KNOWLEDGE   = ['Principiante (recién empiezo)', 'Entusiasta (me gusta apr
 
 // Strip everything that isn't a digit
 function normalizePhone(raw: string) { return raw.replace(/\D/g, '') }
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 

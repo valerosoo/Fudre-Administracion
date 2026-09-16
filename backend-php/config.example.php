@@ -11,6 +11,7 @@ define('DB_USER', 'TU_USUARIO_MYSQL');
 define('DB_PASS', 'TU_PASSWORD_MYSQL');
 
 // ---- Autenticación admin (single-user) ----
+define('ADMIN_EMAIL', 'TU_EMAIL_ADMIN');
 // Generar con: php -r "echo password_hash('tu-password', PASSWORD_BCRYPT), PHP_EOL;"
 define('ADMIN_PASSWORD_HASH', '$2y$10$REEMPLAZAR_CON_HASH_REAL');
 define('SESSION_LIFETIME_DAYS', 30);

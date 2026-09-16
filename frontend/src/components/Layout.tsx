@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { Wine, Users, CreditCard, Package, LogOut, List, ShoppingCart, ClipboardList, FileText } from 'lucide-react'
+import { Wine, Users, CreditCard, Package, LogOut, List, ShoppingCart, ClipboardList, FileText, HelpCircle } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { authService } from '@/services/auth'
 
@@ -12,6 +12,7 @@ const navItems = [
   { to: '/purchase-list', label: 'Lista de compra',  icon: ShoppingCart },
   { to: '/orders',        label: 'Pedidos',          icon: ClipboardList },
   { to: '/survey',        label: 'Encuesta',         icon: FileText     },
+  { to: '/guide',         label: 'Guía',             icon: HelpCircle   },
 ]
 
 function useCurrentTime() {

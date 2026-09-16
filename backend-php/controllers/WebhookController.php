@@ -17,16 +17,23 @@ class WebhookController
         $payload = Request::body();
         $event = $payload['event'] ?? null;
 
+        // Tiendanube manda un payload liviano: {store_id, event, id}. Hay que
+        // pedirle el recurso completo a la API con ese id antes de procesarlo.
+        $resourceId = isset($payload['id']) ? (string)$payload['id'] : null;
+
         try {
             switch ($event) {
                 case 'order/paid':
-                    $this->handleOrderPaid($payload['order'] ?? null);
+                    $order = $payload['order'] ?? ($resourceId !== null ? TiendanubeClient::getOrder($resourceId) : null);
+                    $this->handleOrderPaid($order);
                     break;
                 case 'order/cancelled':
-                    $this->handleOrderCancelled($payload['order'] ?? null);
+                    $order = $payload['order'] ?? ($resourceId !== null ? TiendanubeClient::getOrder($resourceId) : null);
+                    $this->handleOrderCancelled($order);
                     break;
                 case 'customer/created':
-                    $this->handleCustomerCreated($payload['customer'] ?? null);
+                    $customer = $payload['customer'] ?? ($resourceId !== null ? TiendanubeClient::getCustomer($resourceId) : null);
+                    $this->handleCustomerCreated($customer);
                     break;
             }
         } catch (Throwable $e) {

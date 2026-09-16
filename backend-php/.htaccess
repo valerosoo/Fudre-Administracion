@@ -1,5 +1,11 @@
 RewriteEngine On
 
+# Muchos hosts (PHP-FPM/CGI) no pasan el header Authorization a PHP por
+# defecto; esto lo preserva como variable de entorno para que
+# $_SERVER['HTTP_AUTHORIZATION'] funcione en Auth::extractToken().
+RewriteCond %{HTTP:Authorization} ^(.+)$
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+
 # Bloquear acceso directo a archivos sensibles
 <FilesMatch "^(config\.php)$">
     Require all denied
